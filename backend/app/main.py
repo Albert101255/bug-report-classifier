@@ -8,7 +8,7 @@ from prometheus_client import generate_latest, CONTENT_TYPE_LATEST, Counter, His
 from app.config import settings
 from app.database import init_db, AsyncSessionLocal
 from app.models import Prediction
-from app.routes import predict, history, review, analytics, teams, retrain
+from app.routes import predict, history, review, analytics, teams, retrain, integrations, compare
 
 # Prometheus Telemetry Metrics
 PREDICTIONS_TOTAL = Counter("bug_predictions_total", "Total bug classification predictions", ["confidence_level"])
@@ -17,10 +17,7 @@ REVIEW_QUEUE_SIZE = Gauge("bug_review_queue_size", "Number of predictions awaiti
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Initialize DB schema
     await init_db()
-    
-    # Seed default initial predictions if DB is empty
     async with AsyncSessionLocal() as session:
         res = await session.execute(Prediction.__table__.select())
         first = res.first()
@@ -49,7 +46,6 @@ async def lifespan(app: FastAPI):
                 )
                 session.add(p)
             await session.commit()
-            
     yield
 
 app = FastAPI(
@@ -60,7 +56,6 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# CORS configuration
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -69,13 +64,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include Routers under /api/v1 and root fallback
 app.include_router(predict.router, prefix=settings.API_V1_STR)
 app.include_router(history.router, prefix=settings.API_V1_STR)
 app.include_router(review.router, prefix=settings.API_V1_STR)
 app.include_router(analytics.router, prefix=settings.API_V1_STR)
 app.include_router(teams.router, prefix=settings.API_V1_STR)
 app.include_router(retrain.router, prefix=settings.API_V1_STR)
+app.include_router(integrations.router, prefix=settings.API_V1_STR)
+app.include_router(compare.router, prefix=settings.API_V1_STR)
 
 @app.get("/health", tags=["Health"])
 async def health_check():

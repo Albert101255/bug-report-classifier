@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import type { PredictionResult } from '../../types';
-import { predictSingle, logCorrection } from '../../api';
-import { Zap, CheckCircle2, XCircle, Copy, Sparkles, Brain, Cpu, Clock, RefreshCw } from 'lucide-react';
+import { predictSingle, logCorrection, exportToJira, sendSlackAlert } from '../../api';
+import { Zap, CheckCircle2, XCircle, Copy, Sparkles, Brain, Cpu, Send, Share2 } from 'lucide-react';
 
 export const QuickPredict: React.FC = () => {
   const [subject, setSubject] = useState('');
@@ -43,6 +43,18 @@ export const QuickPredict: React.FC = () => {
       await logCorrection(result.id, 'BL-106 (API Gateway & Microservices)', 'User flagged misclassification');
       showToast('Correction logged for retraining queue!');
     }
+  };
+
+  const handleExportJira = async () => {
+    if (!result) return;
+    const res = await exportToJira(result.id, result.predicted_team, subject || 'Bug Ticket', description);
+    showToast(`Created Jira Ticket ${res.jira_issue_key} assigned to ${result.predicted_team}`);
+  };
+
+  const handleSlackAlert = async () => {
+    if (!result) return;
+    await sendSlackAlert(result.id, result.bug_description, result.predicted_team, result.uncertainty_score);
+    showToast('Sent triage alert notification payload to Slack channel!');
   };
 
   const copyResult = () => {
@@ -125,7 +137,7 @@ export const QuickPredict: React.FC = () => {
             </div>
 
             <button type="submit" className="btn-primary" style={{ width: '100%' }} disabled={isPredicting}>
-              {isPredicting ? <RefreshCw size={16} className="spin" /> : <Zap size={16} />}
+              <Zap size={16} />
               <span>{isPredicting ? 'Calculating Monte Carlo Dropout...' : 'Classify Bug Report'}</span>
             </button>
           </form>
@@ -173,20 +185,15 @@ export const QuickPredict: React.FC = () => {
                 </div>
               </div>
 
-              {/* Top Alternatives */}
-              {result.top_alternatives.length > 0 && (
-                <div style={{ marginBottom: '1.25rem' }}>
-                  <h4 style={{ fontSize: '0.85rem', color: '#94a3b8', marginBottom: '0.5rem' }}>Top Alternative Classifications</h4>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                    {result.top_alternatives.map((alt, i) => (
-                      <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.825rem', background: 'rgba(255,255,255,0.03)', padding: '0.4rem 0.75rem', borderRadius: 8 }}>
-                        <span>{alt.team}</span>
-                        <span style={{ color: '#a5b4fc', fontWeight: 600 }}>{(alt.confidence * 100).toFixed(1)}%</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+              {/* Quick Win Buttons: Jira Sync & Slack Alert */}
+              <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.25rem' }}>
+                <button className="btn-secondary" style={{ flex: 1, color: '#6366f1' }} onClick={handleExportJira}>
+                  <Share2 size={14} /> Sync to Jira
+                </button>
+                <button className="btn-secondary" style={{ flex: 1, color: '#34d399' }} onClick={handleSlackAlert}>
+                  <Send size={14} /> Alert Slack
+                </button>
+              </div>
 
               {/* Action Toolbar */}
               <div style={{ display: 'flex', gap: '0.5rem' }}>

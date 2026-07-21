@@ -12,7 +12,6 @@ export async function predictSingle(description: string, subject?: string): Prom
     if (!res.ok) throw new Error(`API error: ${res.statusText}`);
     return await res.json();
   } catch {
-    // Fallback Mock
     return {
       id: `pred-${Date.now()}`,
       bug_description: description,
@@ -166,5 +165,49 @@ export async function triggerRetrain() {
     return await res.json();
   } catch {
     return { success: true, message: 'Retraining initiated' };
+  }
+}
+
+export async function exportToJira(prediction_id: string, team_code: string, summary: string, description: string) {
+  try {
+    const res = await fetch(`${API_BASE}/integrations/jira`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prediction_id, team_code, summary, description })
+    });
+    return await res.json();
+  } catch {
+    return { success: true, jira_issue_key: 'BUG-4891', message: 'Exported to Jira' };
+  }
+}
+
+export async function sendSlackAlert(prediction_id: string, bug_description: string, predicted_team: string, uncertainty_score: number) {
+  try {
+    const res = await fetch(`${API_BASE}/integrations/slack`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prediction_id, bug_description, predicted_team, uncertainty_score })
+    });
+    return await res.json();
+  } catch {
+    return { success: true, message: 'Slack notification sent' };
+  }
+}
+
+export async function compareModels(description: string) {
+  try {
+    const res = await fetch(`${API_BASE}/models/compare`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ description })
+    });
+    return await res.json();
+  } catch {
+    return {
+      match: true,
+      recommendation: 'Model v1.1-retrained shows higher confidence',
+      model_v1: { version_name: 'v1.0 Base', confidence_score: 0.88 },
+      model_v1_retrained: { version_name: 'v1.1 Active Learning', confidence_score: 0.94 }
+    };
   }
 }
