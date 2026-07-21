@@ -5,11 +5,14 @@
 *.zip
 *.out
 *.log
-
+node_modules/
+dist/
+.pytest_cache/
+*.db
+.env
 
 data/pickles/*
 data/csvs/*
-saved_models/tfidf_model/*
 saved_models/word_embeddings/*
 training/results/*
 

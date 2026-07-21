@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=sqlite+aiosqlite:///./bug_classifier.db
+      - MODEL_DIR=/app/saved_models/tfidf_model
+    volumes:
+      - ./saved_models:/app/saved_models
+    networks:
+      - bug-classifier-net
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - bug-classifier-net
+
+networks:
+  bug-classifier-net:
