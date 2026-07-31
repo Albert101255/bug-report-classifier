@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import sys
 import os
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from serving.database import engine, SessionLocal
@@ -20,13 +21,17 @@ teams_data = [
     ("BL-107", "BL-107 (Search & Indexing Engine)"),
     ("BL-108", "BL-108 (Notification & Webhooks)"),
     ("BL-109", "BL-109 (Analytics & Telemetry)"),
-    ("BL-110", "BL-110 (Security & Compliance)")
+    ("BL-110", "BL-110 (Security & Compliance)"),
 ]
 
 for backlog_id, name in teams_data:
     existing = session.query(Team).filter(Team.backlog_id == backlog_id).first()
     if not existing:
-        t = Team(backlog_id=backlog_id, name=name, description=f"Engineering team managing {name}")
+        t = Team(
+            backlog_id=backlog_id,
+            name=name,
+            description=f"Engineering team managing {name}",
+        )
         session.add(t)
 
 session.commit()

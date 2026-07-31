@@ -1,10 +1,9 @@
-import os
-import pickle
 import numpy as np
 import logging
 from typing import Dict
 
 logger = logging.getLogger(__name__)
+
 
 class ModelManager:
     def __init__(self):
@@ -23,10 +22,10 @@ class ModelManager:
             6: "BL-107 (Search & Indexing Engine)",
             7: "BL-108 (Notification & Webhooks)",
             8: "BL-109 (Analytics & Telemetry)",
-            9: "BL-110 (Security & Compliance)"
+            9: "BL-110 (Security & Compliance)",
         }
 
-    async def load(self, version: str = 'v1.0-tfidf-mc'):
+    async def load(self, version: str = "v1.0-tfidf-mc"):
         self.version = version
         logger.info(f"Model {version} initialized and loaded into memory")
 
@@ -35,7 +34,7 @@ class ModelManager:
             raise ValueError("Description cannot be empty")
 
         clean_text = text.lower()
-        
+
         scores = {
             "BL-101 (Authentication & AuthZ)": 0.05,
             "BL-102 (Database & ORM)": 0.05,
@@ -46,20 +45,73 @@ class ModelManager:
             "BL-107 (Search & Indexing Engine)": 0.05,
             "BL-108 (Notification & Webhooks)": 0.05,
             "BL-109 (Analytics & Telemetry)": 0.05,
-            "BL-110 (Security & Compliance)": 0.05
+            "BL-110 (Security & Compliance)": 0.05,
         }
 
-        if any(k in clean_text for k in ["auth", "login", "oauth", "password", "session", "jwt", "user"]):
+        if any(
+            k in clean_text
+            for k in ["auth", "login", "oauth", "password", "session", "jwt", "user"]
+        ):
             scores["BL-101 (Authentication & AuthZ)"] += 0.85
-        if any(k in clean_text for k in ["db", "database", "postgres", "sql", "orm", "query", "connection"]):
+        if any(
+            k in clean_text
+            for k in ["db", "database", "postgres", "sql", "orm", "query", "connection"]
+        ):
             scores["BL-102 (Database & ORM)"] += 0.85
-        if any(k in clean_text for k in ["ui", "css", "react", "component", "dropdown", "button", "layout", "view"]):
+        if any(
+            k in clean_text
+            for k in [
+                "ui",
+                "css",
+                "react",
+                "component",
+                "dropdown",
+                "button",
+                "layout",
+                "view",
+            ]
+        ):
             scores["BL-103 (UI Components & Design System)"] += 0.85
-        if any(k in clean_text for k in ["payment", "stripe", "billing", "invoice", "charge", "credit", "checkout"]):
+        if any(
+            k in clean_text
+            for k in [
+                "payment",
+                "stripe",
+                "billing",
+                "invoice",
+                "charge",
+                "credit",
+                "checkout",
+            ]
+        ):
             scores["BL-104 (Payment Gateway & Billing)"] += 0.85
-        if any(k in clean_text for k in ["k8s", "kubernetes", "pod", "cloud", "docker", "memory", "cpu", "container"]):
+        if any(
+            k in clean_text
+            for k in [
+                "k8s",
+                "kubernetes",
+                "pod",
+                "cloud",
+                "docker",
+                "memory",
+                "cpu",
+                "container",
+            ]
+        ):
             scores["BL-105 (Cloud Infrastructure & K8s)"] += 0.85
-        if any(k in clean_text for k in ["api", "fastapi", "gateway", "rest", "route", "404", "500", "endpoint"]):
+        if any(
+            k in clean_text
+            for k in [
+                "api",
+                "fastapi",
+                "gateway",
+                "rest",
+                "route",
+                "404",
+                "500",
+                "endpoint",
+            ]
+        ):
             scores["BL-106 (API Gateway & Microservices)"] += 0.85
 
         mc_passes = []
@@ -81,10 +133,7 @@ class ModelManager:
 
         top_3_indices = np.argsort(mean_probs)[-3:][::-1]
         alternatives = [
-            {
-                "team": teams[idx],
-                "confidence": round(float(mean_probs[idx]), 4)
-            }
+            {"team": teams[idx], "confidence": round(float(mean_probs[idx]), 4)}
             for idx in top_3_indices[1:]
         ]
 
@@ -93,7 +142,8 @@ class ModelManager:
             "confidence": round(top_prob, 4),
             "uncertainty": round(uncertainty, 4),
             "alternatives": alternatives,
-            "mc_iterations": mc_iterations
+            "mc_iterations": mc_iterations,
         }
+
 
 model_manager = ModelManager()

@@ -1,5 +1,6 @@
 from locust import HttpUser, task, between
 
+
 class BugClassifierUser(HttpUser):
     wait_time = between(1, 3)
 
@@ -7,7 +8,9 @@ class BugClassifierUser(HttpUser):
     def predict_bug(self):
         self.client.post(
             "/api/v1/predict/single",
-            json={"description": "Database connection timeout error when querying postgres pool"}
+            json={
+                "description": "Database connection timeout error when querying postgres pool"
+            },
         )
 
     @task

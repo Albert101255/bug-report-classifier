@@ -3,7 +3,7 @@ pip=$HOME/miniconda3/envs/nlp-workspace/bin/pip
 python=$HOME/miniconda3/envs/nlp-workspace/bin/python
 
 # Uncomment the following to install pydot and graphviz -- neccessary for generating figures
-# of keras models. 
+# of keras models.
 
 # Make sure sudo is installed to ensure that we can perform proper installs regardless of whether or not user is root
 #if sudo
@@ -14,7 +14,7 @@ python=$HOME/miniconda3/envs/nlp-workspace/bin/python
 #	apt install -y sudo
 #fi
 
-#sudo apt update 
+#sudo apt update
 #sudo apt install -y python-pydot python-pydot-ng graphviz
 # ---
 

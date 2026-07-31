@@ -9,7 +9,7 @@ ipython=$HOME/miniconda3/envs/nlp-workspace/bin/ipython
 
 # Update and initialize env
 $conda update -n base -c defaults conda -y
-$conda create -n "$MYENV" python=3.7 -y 
+$conda create -n "$MYENV" python=3.7 -y
 $conda init bash
 
 # Install Ipykernel to access this env in Jupyter notebook

@@ -3,8 +3,9 @@ import pickle
 import time
 import re
 import numpy as np
-from typing import Dict, Any, Tuple, List
+from typing import Dict, Any
 from app.config import settings
+
 
 class ModelManager:
     """
@@ -12,6 +13,7 @@ class ModelManager:
     Loads saved TF-IDF vectorizer, label mapping, and MC Dropout Keras/Simulated model.
     Calculates Monte Carlo Dropout variance (uncertainty) across stochastic passes.
     """
+
     def __init__(self):
         self.model_version = "v1.0-tfidf-mc"
         self.vectorizer = None
@@ -26,15 +28,15 @@ class ModelManager:
         try:
             vec_path = os.path.join(model_dir, "tfidf_vectorizer.pkl")
             dict_path = os.path.join(model_dir, "label_to_id.pkl")
-            
+
             if os.path.exists(vec_path):
                 with open(vec_path, "rb") as f:
                     self.vectorizer = pickle.load(f)
-            
+
             if os.path.exists(dict_path):
                 with open(dict_path, "rb") as f:
                     self.label_to_id = pickle.load(f)
-                    
+
             if self.label_to_id:
                 self.id_to_label = {v: k for k, v in self.label_to_id.items()}
             else:
@@ -49,25 +51,29 @@ class ModelManager:
                     6: "BL-107 (Search & Indexing Engine)",
                     7: "BL-108 (Notification & Webhooks)",
                     8: "BL-109 (Analytics & Telemetry)",
-                    9: "BL-110 (Security & Compliance)"
+                    9: "BL-110 (Security & Compliance)",
                 }
                 self.id_to_label = {v: k for k, v in self.label_to_id.items()}
 
             self.is_loaded = True
         except Exception as e:
-            print(f"[ModelManager] Initialization notice: {e}. Running with dynamic inference engine.")
+            print(
+                f"[ModelManager] Initialization notice: {e}. Running with dynamic inference engine."
+            )
             self.is_loaded = False
 
     def preprocess_text(self, text: str) -> str:
         if not text:
             return ""
         text = text.lower()
-        text = re.sub(r'<[^>]+>', ' ', text)
-        text = re.sub(r'[^a-zA-Z0-9\s]', ' ', text)
-        text = re.sub(r'\s+', ' ', text).strip()
+        text = re.sub(r"<[^>]+>", " ", text)
+        text = re.sub(r"[^a-zA-Z0-9\s]", " ", text)
+        text = re.sub(r"\s+", " ", text).strip()
         return text
 
-    def predict(self, description: str, subject: str = "", n_iter: int = 20) -> Dict[str, Any]:
+    def predict(
+        self, description: str, subject: str = "", n_iter: int = 20
+    ) -> Dict[str, Any]:
         start_time = time.time()
         combined_text = f"{subject or ''} {description}".strip()
         clean_text = self.preprocess_text(combined_text)
@@ -75,9 +81,27 @@ class ModelManager:
         # Keyword Extraction heuristics
         words = clean_text.split()
         keywords = []
-        stop_words = {'the', 'a', 'an', 'in', 'on', 'at', 'for', 'with', 'and', 'or', 'is', 'was', 'to', 'of', 'failed', 'issue', 'error'}
+        stop_words = {
+            "the",
+            "a",
+            "an",
+            "in",
+            "on",
+            "at",
+            "for",
+            "with",
+            "and",
+            "or",
+            "is",
+            "was",
+            "to",
+            "of",
+            "failed",
+            "issue",
+            "error",
+        }
         filtered_words = [w for w in words if w not in stop_words and len(w) > 2]
-        
+
         # Rule-based semantic team scoring for ultra-fast, robust predictions
         team_scores = {
             "BL-101 (Authentication & AuthZ)": 0.05,
@@ -89,29 +113,110 @@ class ModelManager:
             "BL-107 (Search & Indexing Engine)": 0.05,
             "BL-108 (Notification & Webhooks)": 0.05,
             "BL-109 (Analytics & Telemetry)": 0.05,
-            "BL-110 (Security & Compliance)": 0.05
+            "BL-110 (Security & Compliance)": 0.05,
         }
 
         # Semantic keywords mapping
-        if any(k in clean_text for k in ["auth", "login", "oauth", "password", "session", "jwt", "user"]):
+        if any(
+            k in clean_text
+            for k in ["auth", "login", "oauth", "password", "session", "jwt", "user"]
+        ):
             team_scores["BL-101 (Authentication & AuthZ)"] += 0.85
-        if any(k in clean_text for k in ["db", "database", "postgres", "sql", "orm", "query", "connection"]):
+        if any(
+            k in clean_text
+            for k in ["db", "database", "postgres", "sql", "orm", "query", "connection"]
+        ):
             team_scores["BL-102 (Database & ORM)"] += 0.85
-        if any(k in clean_text for k in ["ui", "css", "react", "component", "dropdown", "button", "layout", "view"]):
+        if any(
+            k in clean_text
+            for k in [
+                "ui",
+                "css",
+                "react",
+                "component",
+                "dropdown",
+                "button",
+                "layout",
+                "view",
+            ]
+        ):
             team_scores["BL-103 (UI Components & Design System)"] += 0.85
-        if any(k in clean_text for k in ["payment", "stripe", "billing", "invoice", "charge", "credit", "checkout"]):
+        if any(
+            k in clean_text
+            for k in [
+                "payment",
+                "stripe",
+                "billing",
+                "invoice",
+                "charge",
+                "credit",
+                "checkout",
+            ]
+        ):
             team_scores["BL-104 (Payment Gateway & Billing)"] += 0.85
-        if any(k in clean_text for k in ["k8s", "kubernetes", "pod", "cloud", "docker", "memory", "cpu", "container"]):
+        if any(
+            k in clean_text
+            for k in [
+                "k8s",
+                "kubernetes",
+                "pod",
+                "cloud",
+                "docker",
+                "memory",
+                "cpu",
+                "container",
+            ]
+        ):
             team_scores["BL-105 (Cloud Infrastructure & K8s)"] += 0.85
-        if any(k in clean_text for k in ["api", "fastapi", "gateway", "rest", "route", "404", "500", "endpoint"]):
+        if any(
+            k in clean_text
+            for k in [
+                "api",
+                "fastapi",
+                "gateway",
+                "rest",
+                "route",
+                "404",
+                "500",
+                "endpoint",
+            ]
+        ):
             team_scores["BL-106 (API Gateway & Microservices)"] += 0.85
-        if any(k in clean_text for k in ["search", "elasticsearch", "index", "query", "filter", "fulltext"]):
+        if any(
+            k in clean_text
+            for k in ["search", "elasticsearch", "index", "query", "filter", "fulltext"]
+        ):
             team_scores["BL-107 (Search & Indexing Engine)"] += 0.85
-        if any(k in clean_text for k in ["email", "notification", "smtp", "webhook", "dispatch", "send"]):
+        if any(
+            k in clean_text
+            for k in ["email", "notification", "smtp", "webhook", "dispatch", "send"]
+        ):
             team_scores["BL-108 (Notification & Webhooks)"] += 0.85
-        if any(k in clean_text for k in ["metric", "prometheus", "gauge", "telemetry", "latency", "chart", "analytics"]):
+        if any(
+            k in clean_text
+            for k in [
+                "metric",
+                "prometheus",
+                "gauge",
+                "telemetry",
+                "latency",
+                "chart",
+                "analytics",
+            ]
+        ):
             team_scores["BL-109 (Analytics & Telemetry)"] += 0.85
-        if any(k in clean_text for k in ["security", "injection", "vulnerability", "xss", "csrf", "attack", "exploit"]):
+        if any(
+            k in clean_text
+            for k in [
+                "security",
+                "injection",
+                "vulnerability",
+                "xss",
+                "csrf",
+                "attack",
+                "exploit",
+            ]
+        ):
             team_scores["BL-110 (Security & Compliance)"] += 0.85
 
         # Monte Carlo Dropout Simulation: Generate N stochastic probability vectors
@@ -126,7 +231,9 @@ class ModelManager:
 
         probs_matrix = np.array(probs_matrix)
         mean_probs = np.mean(probs_matrix, axis=0)
-        std_probs = np.std(probs_matrix, axis=0) # Standard Deviation = Proxy for Uncertainty
+        std_probs = np.std(
+            probs_matrix, axis=0
+        )  # Standard Deviation = Proxy for Uncertainty
 
         # Sorted Predictions
         team_names = list(team_scores.keys())
@@ -150,15 +257,19 @@ class ModelManager:
         # Top 3 Alternatives
         alternatives = []
         for idx in sorted_indices[1:4]:
-            alternatives.append({
-                "team": team_names[idx],
-                "confidence": round(float(mean_probs[idx]), 4),
-                "uncertainty": round(float(std_probs[idx]), 4)
-            })
+            alternatives.append(
+                {
+                    "team": team_names[idx],
+                    "confidence": round(float(mean_probs[idx]), 4),
+                    "uncertainty": round(float(std_probs[idx]), 4),
+                }
+            )
 
         # Top 5 Keywords
         for w in filtered_words[:5]:
-            keywords.append({"word": w, "score": round(float(np.random.uniform(0.7, 0.98)), 3)})
+            keywords.append(
+                {"word": w, "score": round(float(np.random.uniform(0.7, 0.98)), 3)}
+            )
 
         latency_ms = round((time.time() - start_time) * 1000, 2)
 
@@ -170,7 +281,8 @@ class ModelManager:
             "status": status,
             "top_alternatives": alternatives,
             "top_keywords": keywords,
-            "latency_ms": latency_ms
+            "latency_ms": latency_ms,
         }
+
 
 model_manager = ModelManager()

@@ -16,7 +16,7 @@ data/csvs/*
 saved_models/word_embeddings/*
 training/results/*
 
-!saved_models/word-embeddings/.gitkeep 
+!saved_models/word-embeddings/.gitkeep
 !saved_models/tfidf_model/.gitkeep
 !data/csvs/.gitkeep
 !data/pickles/.gitkeep
