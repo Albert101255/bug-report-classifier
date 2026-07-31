@@ -39,11 +39,15 @@ body {
   overflow-x: hidden;
 }
 
-h1, h2, h3, h4 {
+h1,
+h2,
+h3,
+h4 {
   font-family: var(--font-heading);
 }
 
-code, pre {
+code,
+pre {
   font-family: var(--font-mono);
 }
 

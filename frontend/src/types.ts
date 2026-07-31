@@ -41,7 +41,11 @@ export interface AnalyticsSummary {
   needs_review_pct: number;
   corrected_pct: number;
   team_accuracy_breakdown: Record<string, number>;
-  daily_prediction_trend: Array<{ day: string; count: number; avg_confidence: number }>;
+  daily_prediction_trend: Array<{
+    day: string;
+    count: number;
+    avg_confidence: number;
+  }>;
 }
 
 export interface ModelInfo {

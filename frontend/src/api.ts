@@ -1,13 +1,21 @@
-import type { PredictionResult, TeamInfo, AnalyticsSummary, ModelInfo } from './types';
+import type {
+  PredictionResult,
+  TeamInfo,
+  AnalyticsSummary,
+  ModelInfo,
+} from './types';
 
 const API_BASE = 'http://localhost:8000/api/v1';
 
-export async function predictSingle(description: string, subject?: string): Promise<PredictionResult> {
+export async function predictSingle(
+  description: string,
+  subject?: string,
+): Promise<PredictionResult> {
   try {
     const res = await fetch(`${API_BASE}/predict/single`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ description, subject })
+      body: JSON.stringify({ description, subject }),
     });
     if (!res.ok) throw new Error(`API error: ${res.statusText}`);
     return await res.json();
@@ -22,24 +30,30 @@ export async function predictSingle(description: string, subject?: string): Prom
       confidence_level: 'HIGH',
       status: 'auto_assigned',
       top_alternatives: [
-        { team: 'BL-106 (API Gateway & Microservices)', confidence: 0.04, uncertainty: 0.08 }
+        {
+          team: 'BL-106 (API Gateway & Microservices)',
+          confidence: 0.04,
+          uncertainty: 0.08,
+        },
       ],
       top_keywords: [
         { word: 'login', score: 0.92 },
-        { word: 'oauth', score: 0.88 }
+        { word: 'oauth', score: 0.88 },
       ],
       latency_ms: 38.4,
-      created_at: new Date().toISOString()
+      created_at: new Date().toISOString(),
     };
   }
 }
 
-export async function predictBatch(items: Array<{ description: string; subject?: string }>): Promise<PredictionResult[]> {
+export async function predictBatch(
+  items: Array<{ description: string; subject?: string }>,
+): Promise<PredictionResult[]> {
   try {
     const res = await fetch(`${API_BASE}/predict/batch`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ items })
+      body: JSON.stringify({ items }),
     });
     if (!res.ok) throw new Error(`API error: ${res.statusText}`);
     const data = await res.json();
@@ -57,12 +71,17 @@ export async function predictBatch(items: Array<{ description: string; subject?:
       top_alternatives: [],
       top_keywords: [],
       latency_ms: 22.1,
-      created_at: new Date().toISOString()
+      created_at: new Date().toISOString(),
     }));
   }
 }
 
-export async function fetchHistory(limit = 50, team?: string, level?: string, search?: string): Promise<PredictionResult[]> {
+export async function fetchHistory(
+  limit = 50,
+  team?: string,
+  level?: string,
+  search?: string,
+): Promise<PredictionResult[]> {
   try {
     let url = `${API_BASE}/predict/history?limit=${limit}`;
     if (team) url += `&team=${encodeURIComponent(team)}`;
@@ -86,12 +105,16 @@ export async function fetchReviewQueue(): Promise<PredictionResult[]> {
   }
 }
 
-export async function logCorrection(prediction_id: string, corrected_team: string, reason?: string) {
+export async function logCorrection(
+  prediction_id: string,
+  corrected_team: string,
+  reason?: string,
+) {
   try {
     const res = await fetch(`${API_BASE}/feedback/correct`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prediction_id, corrected_team, reason })
+      body: JSON.stringify({ prediction_id, corrected_team, reason }),
     });
     return await res.json();
   } catch {
@@ -113,19 +136,19 @@ export async function fetchAnalytics(): Promise<AnalyticsSummary> {
       needs_review_pct: 11.2,
       corrected_pct: 4.3,
       team_accuracy_breakdown: {
-        "BL-101 (Authentication & AuthZ)": 94.5,
-        "BL-102 (Database & ORM)": 91.2,
-        "BL-103 (UI Components & Design System)": 96.0,
-        "BL-104 (Payment Gateway & Billing)": 89.8,
-        "BL-105 (Cloud Infrastructure & K8s)": 93.4
+        'BL-101 (Authentication & AuthZ)': 94.5,
+        'BL-102 (Database & ORM)': 91.2,
+        'BL-103 (UI Components & Design System)': 96.0,
+        'BL-104 (Payment Gateway & Billing)': 89.8,
+        'BL-105 (Cloud Infrastructure & K8s)': 93.4,
       },
       daily_prediction_trend: [
         { day: 'Mon', count: 42, avg_confidence: 0.89 },
         { day: 'Tue', count: 68, avg_confidence: 0.91 },
         { day: 'Wed', count: 95, avg_confidence: 0.93 },
-        { day: 'Thu', count: 84, avg_confidence: 0.90 },
-        { day: 'Fri', count: 110, avg_confidence: 0.94 }
-      ]
+        { day: 'Thu', count: 84, avg_confidence: 0.9 },
+        { day: 'Fri', count: 110, avg_confidence: 0.94 },
+      ],
     };
   }
 }
@@ -154,7 +177,7 @@ export async function fetchModelInfo(): Promise<ModelInfo> {
       confidence_threshold_high: 0.05,
       confidence_threshold_low: 0.15,
       last_trained_at: new Date().toISOString(),
-      is_active: true
+      is_active: true,
     };
   }
 }
@@ -168,25 +191,44 @@ export async function triggerRetrain() {
   }
 }
 
-export async function exportToJira(prediction_id: string, team_code: string, summary: string, description: string) {
+export async function exportToJira(
+  prediction_id: string,
+  team_code: string,
+  summary: string,
+  description: string,
+) {
   try {
     const res = await fetch(`${API_BASE}/integrations/jira`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prediction_id, team_code, summary, description })
+      body: JSON.stringify({ prediction_id, team_code, summary, description }),
     });
     return await res.json();
   } catch {
-    return { success: true, jira_issue_key: 'BUG-4891', message: 'Exported to Jira' };
+    return {
+      success: true,
+      jira_issue_key: 'BUG-4891',
+      message: 'Exported to Jira',
+    };
   }
 }
 
-export async function sendSlackAlert(prediction_id: string, bug_description: string, predicted_team: string, uncertainty_score: number) {
+export async function sendSlackAlert(
+  prediction_id: string,
+  bug_description: string,
+  predicted_team: string,
+  uncertainty_score: number,
+) {
   try {
     const res = await fetch(`${API_BASE}/integrations/slack`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prediction_id, bug_description, predicted_team, uncertainty_score })
+      body: JSON.stringify({
+        prediction_id,
+        bug_description,
+        predicted_team,
+        uncertainty_score,
+      }),
     });
     return await res.json();
   } catch {
@@ -199,7 +241,7 @@ export async function compareModels(description: string) {
     const res = await fetch(`${API_BASE}/models/compare`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ description })
+      body: JSON.stringify({ description }),
     });
     return await res.json();
   } catch {
@@ -207,7 +249,10 @@ export async function compareModels(description: string) {
       match: true,
       recommendation: 'Model v1.1-retrained shows higher confidence',
       model_v1: { version_name: 'v1.0 Base', confidence_score: 0.88 },
-      model_v1_retrained: { version_name: 'v1.1 Active Learning', confidence_score: 0.94 }
+      model_v1_retrained: {
+        version_name: 'v1.1 Active Learning',
+        confidence_score: 0.94,
+      },
     };
   }
 }
