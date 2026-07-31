@@ -141,3 +141,13 @@ widgetsnbextension==3.5.1
 word2number==1.1
 wrapt==1.12.1
 zipp==3.1.0
+
+fastapi
+uvicorn
+pydantic
+pydantic-settings
+SQLAlchemy
+asyncpg
+aiosqlite
+redis
+fastapi-cache2[redis]

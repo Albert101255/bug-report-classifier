@@ -4,11 +4,13 @@ from sqlalchemy import select, func
 from app.database import get_db
 from app.models import Prediction
 from app.schemas import AnalyticsSummary
+from fastapi_cache.decorator import cache
 
 router = APIRouter(prefix="/analytics", tags=["Analytics"])
 
 
 @router.get("/summary", response_model=AnalyticsSummary)
+@cache(expire=60)
 async def get_analytics_summary(db: AsyncSession = Depends(get_db)):
     # Total Predictions Count
     res_total = await db.execute(select(func.count(Prediction.id)))

@@ -12,6 +12,9 @@ from prometheus_client import (
 
 from app.config import settings
 from app.database import init_db, AsyncSessionLocal
+from redis import asyncio as aioredis
+from fastapi_cache import FastAPICache
+from fastapi_cache.backends.redis import RedisBackend
 from app.models import Prediction
 from app.routes import (
     predict,
@@ -40,6 +43,10 @@ REVIEW_QUEUE_SIZE = Gauge(
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    redis = aioredis.from_url(
+        settings.REDIS_URL, encoding="utf8", decode_responses=True
+    )
+    FastAPICache.init(RedisBackend(redis), prefix="fastapi-cache")
     await init_db()
     async with AsyncSessionLocal() as session:
         res = await session.execute(Prediction.__table__.select())

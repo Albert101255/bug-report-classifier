@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     DATABASE_URL: str = os.getenv(
         "DATABASE_URL", "sqlite+aiosqlite:///./bug_classifier.db"
     )
+    REDIS_URL: str = os.getenv("REDIS_URL", "redis://localhost:6379")
     MODEL_DIR: str = os.getenv(
         "MODEL_DIR",
         "/home/albert/project 1/bug_classification_research/saved_models/tfidf_model",
