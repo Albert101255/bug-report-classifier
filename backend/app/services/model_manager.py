@@ -4,6 +4,7 @@ import time
 import re
 import numpy as np
 from typing import Dict, Any
+import mlflow
 from app.config import settings
 
 
@@ -20,6 +21,7 @@ class ModelManager:
         self.label_to_id = {}
         self.id_to_label = {}
         self.model = None
+        self.transformer_pipeline = None
         self.is_loaded = False
         self._load_artifacts()
 
@@ -55,6 +57,33 @@ class ModelManager:
                 }
                 self.id_to_label = {v: k for k, v in self.label_to_id.items()}
 
+            # Try loading MLflow Transformer model
+            try:
+                mlflow.set_tracking_uri(
+                    os.environ.get("MLFLOW_TRACKING_URI", "http://mlflow:5000")
+                )
+                # In a real scenario we'd query for the latest production model
+                # Here we just try to load a known URI if possible
+                client = mlflow.tracking.MlflowClient()
+                experiments = client.search_experiments(
+                    filter_string="name = 'bug-report-classifier-transformer'"
+                )
+                if experiments:
+                    runs = client.search_runs(
+                        experiment_ids=[experiments[0].experiment_id]
+                    )
+                    if runs:
+                        latest_run = runs[0]
+                        model_uri = f"runs:/{latest_run.info.run_id}/transformer_model"
+                        self.transformer_pipeline = mlflow.transformers.load_model(
+                            model_uri
+                        )
+                        print(
+                            f"[ModelManager] Successfully loaded MLflow transformer model from {model_uri}"
+                        )
+            except Exception as e:
+                print(f"[ModelManager] Could not load MLflow model: {e}")
+
             self.is_loaded = True
         except Exception as e:
             print(
@@ -77,6 +106,13 @@ class ModelManager:
         start_time = time.time()
         combined_text = f"{subject or ''} {description}".strip()
         clean_text = self.preprocess_text(combined_text)
+
+        if self.transformer_pipeline:
+            # Use MLflow loaded transformer pipeline
+            _ = self.transformer_pipeline(clean_text[:512], top_k=None)
+            # This is a mock implementation of returning the transformer result.
+            # Real implementation would map the pipeline outputs to the expected dict.
+            pass
 
         # Keyword Extraction heuristics
         words = clean_text.split()

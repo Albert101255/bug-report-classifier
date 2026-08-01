@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bug-classifier-api
+  labels:
+    app: bug-classifier-api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: bug-classifier-api
+  template:
+    metadata:
+      labels:
+        app: bug-classifier-api
+    spec:
+      containers:
+      - name: bug-classifier-api
+        image: bug-classifier-api:latest
+        ports:
+        - containerPort: 8000
+        env:
+        - name: DATABASE_URL
+          value: "postgresql://bug_user:secure_password_123@postgres:5432/bug_classifier"
+        - name: REDIS_URL
+          value: "redis://redis:6379"
