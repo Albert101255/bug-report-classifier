@@ -1,12 +1,11 @@
 from pathlib import Path
 
-from fastapi import APIRouter, Depends, HTTPException, status
-
 from app.config import settings
 from app.schemas import ModelInfoResponse
 from app.security import require_admin_key
 from app.services.model_manager import model_manager
 from app.worker import retrain_model_task
+from fastapi import APIRouter, Depends, HTTPException, status
 
 router = APIRouter(prefix="/models", tags=["Model Management"])
 

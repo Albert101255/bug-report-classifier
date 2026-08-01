@@ -9,7 +9,7 @@ BACKEND_ROOT = REPOSITORY_ROOT / "backend"
 if str(BACKEND_ROOT) not in sys.path:
     sys.path.insert(0, str(BACKEND_ROOT))
 
-from app.services.training import train_baseline  # noqa: E402
+from app.services.training import train_baseline
 
 
 def main() -> None:

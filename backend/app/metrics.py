@@ -1,6 +1,5 @@
 from prometheus_client import Counter, Gauge, Histogram
 
-
 PREDICTIONS_TOTAL = Counter(
     "bug_predictions_total",
     "Total bug classification predictions",

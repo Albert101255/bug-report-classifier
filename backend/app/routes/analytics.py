@@ -1,10 +1,10 @@
-from fastapi import APIRouter, Depends
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
 from app.database import get_db
 from app.models import Prediction
 from app.schemas import AnalyticsSummary
+from fastapi import APIRouter, Depends
 from fastapi_cache.decorator import cache
+from sqlalchemy import func, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter(prefix="/analytics", tags=["Analytics"])
 

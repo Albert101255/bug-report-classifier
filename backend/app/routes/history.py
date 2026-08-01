@@ -1,20 +1,19 @@
-from typing import List, Optional
-from fastapi import APIRouter, Depends, Query
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
 from app.database import get_db
 from app.models import Prediction
 from app.schemas import SinglePredictResponse
+from fastapi import APIRouter, Depends, Query
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter(prefix="/predict", tags=["History"])
 
 
-@router.get("/history", response_model=List[SinglePredictResponse])
+@router.get("/history", response_model=list[SinglePredictResponse])
 async def get_prediction_history(
     limit: int = Query(50, ge=1, le=500),
-    team: Optional[str] = None,
-    level: Optional[str] = None,
-    search: Optional[str] = None,
+    team: str | None = None,
+    level: str | None = None,
+    search: str | None = None,
     db: AsyncSession = Depends(get_db),
 ):
     query = select(Prediction).order_by(Prediction.created_at.desc()).limit(limit)

@@ -1,13 +1,6 @@
 import logging
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, Response
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi_cache import FastAPICache
-from fastapi_cache.backends.redis import RedisBackend
-from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
-from redis import asyncio as aioredis
-
 from app.config import settings
 from app.database import init_db
 from app.routes import (
@@ -20,6 +13,12 @@ from app.routes import (
     review,
     teams,
 )
+from fastapi import FastAPI, Response
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi_cache import FastAPICache
+from fastapi_cache.backends.redis import RedisBackend
+from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
+from redis import asyncio as aioredis
 
 logger = logging.getLogger(__name__)
 

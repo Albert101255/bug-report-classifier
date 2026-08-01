@@ -7,7 +7,6 @@ from typing import Any
 
 import joblib
 import numpy as np
-
 from app.config import settings
 
 logger = logging.getLogger(__name__)

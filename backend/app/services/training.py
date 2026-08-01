@@ -3,7 +3,7 @@ import json
 import os
 import tempfile
 from collections import Counter
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -117,9 +117,9 @@ def train_baseline(dataset_path: Path, model_dir: Path) -> dict[str, Any]:
     classifier.fit(train_vectors, train_labels)
     predicted = classifier.predict(validation_vectors)
 
-    trained_at = datetime.now(timezone.utc).isoformat()
+    trained_at = datetime.now(UTC).isoformat()
     metadata = {
-        "model_version": f"tfidf-logreg-{datetime.now(timezone.utc).strftime('%Y%m%d%H%M%S')}",
+        "model_version": f"tfidf-logreg-{datetime.now(UTC).strftime('%Y%m%d%H%M%S')}",
         "framework": "scikit-learn TF-IDF + Logistic Regression",
         "trained_at": trained_at,
         "dataset": str(dataset_path),

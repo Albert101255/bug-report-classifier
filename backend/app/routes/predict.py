@@ -1,9 +1,5 @@
 import uuid
-from datetime import datetime, timezone
-
-from fastapi import APIRouter, Depends, HTTPException
-from fastapi.concurrency import run_in_threadpool
-from sqlalchemy.ext.asyncio import AsyncSession
+from datetime import UTC, datetime
 
 from app.database import get_db
 from app.metrics import PREDICTION_LATENCY, PREDICTIONS_TOTAL
@@ -15,6 +11,9 @@ from app.schemas import (
     SinglePredictResponse,
 )
 from app.services.model_manager import model_manager
+from fastapi import APIRouter, Depends, HTTPException
+from fastapi.concurrency import run_in_threadpool
+from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter(prefix="/predict", tags=["Predictions"])
 
@@ -34,7 +33,7 @@ def _response(
         top_alternatives=result["top_alternatives"],
         top_keywords=result["top_keywords"],
         latency_ms=result["latency_ms"],
-        created_at=datetime.now(timezone.utc).isoformat(),
+        created_at=datetime.now(UTC).isoformat(),
     )
 
 

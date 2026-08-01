@@ -1,7 +1,8 @@
-from pydantic import BaseModel
-from typing import List, Dict, Any
-from fastapi import APIRouter
+from typing import Any
+
 from app.services.model_manager import model_manager
+from fastapi import APIRouter
+from pydantic import BaseModel
 
 router = APIRouter(prefix="/models", tags=["Model Comparison"])
 
@@ -16,7 +17,7 @@ class ModelVersionResult(BaseModel):
     confidence_score: float
     uncertainty_score: float
     confidence_level: str
-    top_keywords: List[Dict[str, Any]]
+    top_keywords: list[dict[str, Any]]
 
 
 class ModelCompareResponse(BaseModel):

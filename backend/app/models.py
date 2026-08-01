@@ -1,8 +1,8 @@
 from datetime import datetime
-from typing import Optional
-from sqlalchemy import String, Float, Integer, Text, DateTime, JSON, ForeignKey
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from app.database import Base
+from sqlalchemy import JSON, DateTime, Float, ForeignKey, Integer, String, Text
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 
 class Prediction(Base):
@@ -10,7 +10,7 @@ class Prediction(Base):
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
     bug_description: Mapped[str] = mapped_column(Text, nullable=False)
-    subject: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    subject: Mapped[str | None] = mapped_column(String(255), nullable=True)
     predicted_team: Mapped[str] = mapped_column(String(100), nullable=False)
     confidence_score: Mapped[float] = mapped_column(
         Float, nullable=False
@@ -24,8 +24,8 @@ class Prediction(Base):
     status: Mapped[str] = mapped_column(
         String(30), default="auto_assigned"
     )  # auto_assigned / needs_review / human_corrected
-    top_alternatives: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
-    top_keywords: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
+    top_alternatives: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    top_keywords: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     latency_ms: Mapped[float] = mapped_column(Float, default=0.0)
     user_id: Mapped[str] = mapped_column(String(50), default="anonymous")
     model_version: Mapped[str] = mapped_column(String(50), default="v1.0-tfidf-mc")
@@ -45,7 +45,7 @@ class Feedback(Base):
     )
     original_team: Mapped[str] = mapped_column(String(100), nullable=False)
     corrected_team: Mapped[str] = mapped_column(String(100), nullable=False)
-    reason: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    reason: Mapped[str | None] = mapped_column(Text, nullable=True)
     reviewer_user_id: Mapped[str] = mapped_column(String(50), default="human_reviewer")
     is_retrained: Mapped[bool] = mapped_column(default=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)

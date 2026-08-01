@@ -1,10 +1,9 @@
-from typing import List
-from fastapi import APIRouter
 from app.schemas import TeamInfo
+from fastapi import APIRouter
 
 router = APIRouter(prefix="/teams", tags=["Teams"])
 
-TEAMS_CATALOG: List[TeamInfo] = [
+TEAMS_CATALOG: list[TeamInfo] = [
     TeamInfo(
         code="BL-101",
         name="BL-101 (Authentication & AuthZ)",
@@ -88,6 +87,6 @@ TEAMS_CATALOG: List[TeamInfo] = [
 ]
 
 
-@router.get("/list", response_model=List[TeamInfo])
+@router.get("/list", response_model=list[TeamInfo])
 async def list_teams():
     return TEAMS_CATALOG

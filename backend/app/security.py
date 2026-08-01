@@ -1,9 +1,8 @@
 import secrets
 from typing import Annotated
 
-from fastapi import Header, HTTPException, status
-
 from app.config import settings
+from fastapi import Header, HTTPException, status
 
 
 async def require_admin_key(

@@ -1,9 +1,8 @@
 from pathlib import Path
 
-from celery import Celery
-
 from app.config import settings
 from app.services.training import train_baseline
+from celery import Celery
 
 celery_app = Celery(
     "bug_classifier_worker",
