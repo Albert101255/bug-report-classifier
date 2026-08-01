@@ -1,6 +1,5 @@
-from pydantic import BaseModel
-from typing import Optional
 from fastapi import APIRouter
+from pydantic import BaseModel
 
 router = APIRouter(prefix="/integrations", tags=["Integrations (Jira & Slack)"])
 
@@ -11,7 +10,7 @@ class JiraExportRequest(BaseModel):
     issue_type: str = "Bug"
     summary: str
     description: str
-    jira_project_key: Optional[str] = "BUG"
+    jira_project_key: str | None = "BUG"
 
 
 class JiraExportResponse(BaseModel):
@@ -26,7 +25,7 @@ class SlackAlertRequest(BaseModel):
     bug_description: str
     predicted_team: str
     uncertainty_score: float
-    slack_channel: Optional[str] = "#bug-triage-alerts"
+    slack_channel: str | None = "#bug-triage-alerts"
 
 
 @router.post("/jira", response_model=JiraExportResponse)

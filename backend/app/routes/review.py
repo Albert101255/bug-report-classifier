@@ -1,16 +1,16 @@
 import uuid
-from typing import List
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+
 from app.database import get_db
-from app.models import Prediction, Feedback
-from app.schemas import ReviewQueueItem, CorrectionRequest, CorrectionResponse
+from app.models import Feedback, Prediction
+from app.schemas import CorrectionRequest, CorrectionResponse, ReviewQueueItem
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter(prefix="", tags=["Review Queue & Feedback"])
 
 
-@router.get("/predict/review-queue", response_model=List[ReviewQueueItem])
+@router.get("/predict/review-queue", response_model=list[ReviewQueueItem])
 async def get_review_queue(db: AsyncSession = Depends(get_db)):
     query = (
         select(Prediction)

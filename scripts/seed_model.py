@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 import os
 import pickle
+
 import numpy as np
-from sklearn.feature_extraction.text import TfidfVectorizer
 import tensorflow as tf
+from sklearn.feature_extraction.text import TfidfVectorizer
 from tensorflow import keras
-from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Dropout, Input, LeakyReLU
+from tensorflow.keras.models import Sequential
 
 
 def generate_seed_model():

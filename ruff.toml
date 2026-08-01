@@ -1,0 +1,5 @@
+target-version = "py311"
+
+[lint.per-file-ignores]
+"backend/app/routes/**/*.py" = ["B008"]
+"backend/app/main.py" = ["B008"]

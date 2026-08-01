@@ -1,126 +1,51 @@
-import uuid
+import logging
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Response
-from fastapi.middleware.cors import CORSMiddleware
-from prometheus_client import (
-    generate_latest,
-    CONTENT_TYPE_LATEST,
-    Counter,
-    Histogram,
-    Gauge,
-)
 
 from app.config import settings
-from app.database import init_db, AsyncSessionLocal
-from redis import asyncio as aioredis
+from app.database import init_db
+from app.routes import (
+    analytics,
+    compare,
+    history,
+    integrations,
+    predict,
+    retrain,
+    review,
+    teams,
+)
+from fastapi import FastAPI, Response
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.redis import RedisBackend
-from app.models import Prediction
-from app.routes import (
-    predict,
-    history,
-    review,
-    analytics,
-    teams,
-    retrain,
-    integrations,
-    compare,
-)
+from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
+from redis import asyncio as aioredis
 
-# Prometheus Telemetry Metrics
-PREDICTIONS_TOTAL = Counter(
-    "bug_predictions_total",
-    "Total bug classification predictions",
-    ["confidence_level"],
-)
-PREDICTION_LATENCY = Histogram(
-    "bug_prediction_latency_ms", "Bug prediction latency in milliseconds"
-)
-REVIEW_QUEUE_SIZE = Gauge(
-    "bug_review_queue_size", "Number of predictions awaiting human review"
-)
+logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    redis = aioredis.from_url(
-        settings.REDIS_URL, encoding="utf8", decode_responses=True
-    )
-    FastAPICache.init(RedisBackend(redis), prefix="fastapi-cache")
     await init_db()
-    async with AsyncSessionLocal() as session:
-        res = await session.execute(Prediction.__table__.select())
-        first = res.first()
-        if not first:
-            seed_items = [
-                (
-                    "User login failed with HTTP 500 when submitting OAuth token in auth service",
-                    "BL-101 (Authentication & AuthZ)",
-                    0.94,
-                    0.02,
-                    "HIGH",
-                    "auto_assigned",
-                ),
-                (
-                    "Database connection pool exhausted during high load queries on postgres",
-                    "BL-102 (Database & ORM)",
-                    0.88,
-                    0.04,
-                    "HIGH",
-                    "auto_assigned",
-                ),
-                (
-                    "React component CSS dropdown menu overflow issue in dark mode",
-                    "BL-103 (UI Components & Design System)",
-                    0.96,
-                    0.01,
-                    "HIGH",
-                    "auto_assigned",
-                ),
-                (
-                    "Stripe payment webhook verification failed due to missing signature",
-                    "BL-104 (Payment Gateway & Billing)",
-                    0.72,
-                    0.12,
-                    "MEDIUM",
-                    "needs_review",
-                ),
-                (
-                    "Kubernetes pod crashing with OOMKilled memory limit exception",
-                    "BL-105 (Cloud Infrastructure & K8s)",
-                    0.91,
-                    0.03,
-                    "HIGH",
-                    "auto_assigned",
-                ),
-                (
-                    "Unclear stack trace in background worker thread execution",
-                    "BL-106 (API Gateway & Microservices)",
-                    0.54,
-                    0.22,
-                    "LOW",
-                    "needs_review",
-                ),
-            ]
-            for desc, team, conf, unc, level, status in seed_items:
-                p = Prediction(
-                    id=f"pred-{uuid.uuid4().hex[:12]}",
-                    bug_description=desc,
-                    predicted_team=team,
-                    confidence_score=conf,
-                    uncertainty_score=unc,
-                    confidence_level=level,
-                    status=status,
-                    top_alternatives=[
-                        {"team": "BL-106", "confidence": 0.15, "uncertainty": 0.08}
-                    ],
-                    top_keywords=[{"word": desc.split()[0].lower(), "score": 0.85}],
-                    latency_ms=45.0,
-                    user_id="seed_user",
-                )
-                session.add(p)
-            await session.commit()
+    redis = None
+    try:
+        redis = aioredis.from_url(
+            settings.REDIS_URL,
+            encoding="utf8",
+            decode_responses=True,
+        )
+        await redis.ping()
+        FastAPICache.init(RedisBackend(redis), prefix="fastapi-cache")
+        app.state.redis = redis
+    except Exception:
+        logger.warning(
+            "Redis is unavailable; cache-dependent features are disabled", exc_info=True
+        )
+        app.state.redis = None
+
     yield
+
+    if redis is not None:
+        await redis.aclose()
 
 
 app = FastAPI(
@@ -133,10 +58,10 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=settings.cors_origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "X-Admin-Key"],
 )
 
 app.include_router(predict.router, prefix=settings.API_V1_STR)
@@ -150,7 +75,7 @@ app.include_router(compare.router, prefix=settings.API_V1_STR)
 
 
 @app.get("/health", tags=["Health"])
-async def health_check():
+async def health_check() -> dict:
     return {
         "status": "healthy",
         "project": settings.PROJECT_NAME,
@@ -159,5 +84,5 @@ async def health_check():
 
 
 @app.get("/metrics", tags=["Observability"])
-async def get_prometheus_metrics():
+async def get_prometheus_metrics() -> Response:
     return Response(content=generate_latest(), media_type=CONTENT_TYPE_LATEST)

@@ -1,11 +1,14 @@
-import time
-from celery import Celery
+from pathlib import Path
+
 from app.config import settings
+from app.services.training import train_baseline
+from celery import Celery
 
 celery_app = Celery(
-    "bug_classifier_worker", broker=settings.REDIS_URL, backend=settings.REDIS_URL
+    "bug_classifier_worker",
+    broker=settings.REDIS_URL,
+    backend=settings.REDIS_URL,
 )
-
 celery_app.conf.update(
     task_serializer="json",
     accept_content=["json"],
@@ -16,13 +19,9 @@ celery_app.conf.update(
 
 
 @celery_app.task(name="retrain_model_task")
-def retrain_model_task(num_corrections: int):
-    # Simulate a heavy machine learning retraining job
-    time.sleep(10)
-
-    # In a real scenario, this would trigger model.fit(...)
-    return {
-        "status": "success",
-        "message": f"Successfully retrained model with {num_corrections} logged human corrections.",
-        "corrections_processed": num_corrections,
-    }
+def retrain_model_task(dataset_path: str | None = None) -> dict:
+    metadata = train_baseline(
+        Path(dataset_path or settings.TRAINING_DATA_PATH),
+        Path(settings.MODEL_DIR),
+    )
+    return {"status": "success", **metadata}
