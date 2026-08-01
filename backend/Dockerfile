@@ -1,13 +1,24 @@
 FROM python:3.11-slim
 
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1
+
 WORKDIR /app
 
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN addgroup --system app && adduser --system --ingroup app app
 
-COPY backend/app/ app/
-COPY saved_models/ saved_models/
+COPY requirements.txt /tmp/requirements.txt
+RUN python -m pip install --upgrade pip && \
+    pip install -r /tmp/requirements.txt
+
+COPY backend/app/ /app/app/
+COPY data/ /app/data/
+COPY saved_models/ /app/saved_models/
+
+RUN chown -R app:app /app
+USER app
 
 EXPOSE 8000
 
-CMD ["python3", "-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["python", "-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

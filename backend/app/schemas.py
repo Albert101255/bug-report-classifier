@@ -1,18 +1,23 @@
+from typing import Any, Dict, List, Optional
+
 from pydantic import BaseModel, Field
-from typing import Optional, List, Dict, Any
 
 
 class SinglePredictRequest(BaseModel):
     description: str = Field(
         ...,
+        min_length=3,
+        max_length=10_000,
         json_schema_extra={
-            "example": "User login failed with HTTP 500 when submitting OAuth token in authentication service"
+            "example": "User login failed with HTTP 500 when submitting an OAuth token"
         },
     )
     subject: Optional[str] = Field(
-        None, json_schema_extra={"example": "Auth Service OAuth Failure"}
+        None,
+        max_length=255,
+        json_schema_extra={"example": "Auth service OAuth failure"},
     )
-    user_id: Optional[str] = "user_1"
+    user_id: Optional[str] = Field(default="user_1", max_length=50)
 
 
 class AlternativePrediction(BaseModel):
@@ -33,16 +38,16 @@ class SinglePredictResponse(BaseModel):
     predicted_team: str
     confidence_score: float
     uncertainty_score: float
-    confidence_level: str  # HIGH / MEDIUM / LOW
+    confidence_level: str
     status: str
-    top_alternatives: List[AlternativePrediction] = []
-    top_keywords: List[KeywordInfluence] = []
+    top_alternatives: List[AlternativePrediction] = Field(default_factory=list)
+    top_keywords: List[KeywordInfluence] = Field(default_factory=list)
     latency_ms: float
     created_at: str
 
 
 class BatchPredictRequest(BaseModel):
-    items: List[SinglePredictRequest]
+    items: List[SinglePredictRequest] = Field(min_length=1, max_length=100)
 
 
 class BatchPredictResponse(BaseModel):
@@ -74,7 +79,7 @@ class ReviewQueueItem(BaseModel):
     confidence_score: float
     uncertainty_score: float
     confidence_level: str
-    top_alternatives: List[AlternativePrediction] = []
+    top_alternatives: List[AlternativePrediction] = Field(default_factory=list)
     created_at: str
 
 

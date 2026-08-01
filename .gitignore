@@ -8,12 +8,17 @@
 node_modules/
 dist/
 .pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
 *.db
 .env
 
 data/pickles/*
 data/csvs/*
 saved_models/word_embeddings/*
+saved_models/tfidf_model/*
 training/results/*
 
 !saved_models/word-embeddings/.gitkeep

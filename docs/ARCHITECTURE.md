@@ -1,30 +1,31 @@
-# Bug Report Classifier — SaaS Architecture & System Design
-
-The **Bug Report Classifier Platform** transforms an NLP research model (TF-IDF + Monte Carlo Dropout) into an enterprise-grade SaaS platform.
+# Architecture and System Design
 
 ```mermaid
 graph TD
-    Client[Browser Dashboard / CLI] --> |HTTPS / REST| Gateway[FastAPI Backend Engine]
-    Gateway --> MC[Monte Carlo Dropout Inference Engine]
-    Gateway --> DB[(PostgreSQL / SQLite Audit Trail)]
-    Gateway --> Prom[Prometheus Telemetry Metrics]
-
-    MC --> TFIDF[TF-IDF Vectorizer]
-    MC --> Keras[Keras Deep Learning Classifier]
-
-    DB --> PredTable[Predictions Log Table]
-    DB --> FeedTable[Human Feedback & Corrections Log]
-    DB --> ReviewQ[Low-Confidence Review Queue]
+    Client[React Dashboard / API Client] --> API[FastAPI]
+    API --> Model[TF-IDF + Logistic Regression]
+    API --> Fallback[Deterministic Rule Fallback]
+    API --> DB[(PostgreSQL / SQLite)]
+    API --> Redis[(Redis Cache)]
+    API --> Metrics[Prometheus Metrics]
+    Worker[Celery Worker] --> Train[Baseline Training Service]
+    Train --> Artifacts[(Versioned Model Artifacts)]
+    Artifacts --> Model
+    Redis --> Worker
 ```
 
-## 🧠 Core ML Engine & Uncertainty Scoring
+## Prediction path
 
-1. **TF-IDF Feature Extraction**: Converts raw text descriptions & subjects into 500-dimensional term-frequency vectors.
-2. **Monte Carlo Dropout (MC Dropout)**:
-   - Executes $N=20$ to $N=100$ stochastic forward passes with dropout enabled at test time.
-   - Computes the mean probability vector across trials for the predicted backlog team.
-   - Standard Deviation ($\sigma$) serves as an empirical proxy for prediction uncertainty.
-3. **Tri-Tier Confidence Classification**:
-   - **HIGH** ($\sigma < 0.05$): Auto-assigned to target engineering backlog.
-   - **MEDIUM** ($0.05 \le \sigma < 0.15$): Suggested with top 3 alternatives.
-   - **LOW** ($\sigma \ge 0.15$): Routed to Human Review Queue.
+1. The API validates the incoming subject and description.
+2. The model manager reloads newly written artifacts when `metadata.json` changes.
+3. When artifacts exist, TF-IDF features are passed to Logistic Regression.
+4. The highest class probability becomes `confidence_score`.
+5. `uncertainty_score` is calculated as `1 - confidence_score`.
+6. Inputs above the configured uncertainty threshold are sent to the review queue.
+7. If artifacts are missing, a deterministic rule fallback is used and identified in telemetry.
+
+## Training path
+
+The training service reads a CSV with `subject`, `description`, and `team` columns, creates a stratified train/validation split, trains the baseline, calculates accuracy and macro-F1, and atomically replaces the model artifacts.
+
+The project does not claim that logged reviewer feedback is automatically safe training data. Corrections should be reviewed and merged into a curated dataset first.

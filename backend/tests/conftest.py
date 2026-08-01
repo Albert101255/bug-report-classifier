@@ -7,6 +7,10 @@ import pytest_asyncio
 from httpx import AsyncClient, ASGITransport
 from app.main import app
 from app.database import init_db
+from fastapi_cache import FastAPICache
+from fastapi_cache.backends.inmemory import InMemoryBackend
+
+FastAPICache.init(InMemoryBackend(), prefix="fastapi-cache")
 
 
 @pytest_asyncio.fixture(autouse=True)
