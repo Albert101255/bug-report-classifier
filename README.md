@@ -1,85 +1,69 @@
 # Bug Report Triage Platform
 
-A full-stack FastAPI and React application that routes software bug reports to engineering teams, records an audit trail, exposes a human review queue, and supports a reproducible machine-learning baseline.
+A FastAPI + React application that classifies software bug reports, stores prediction history, exposes uncertain cases for human review, and supports a reproducible TF-IDF + Logistic Regression baseline.
 
-## What the classifier actually uses
+## Why this project exists
 
-The primary model is a **scikit-learn TF-IDF vectorizer with multinomial Logistic Regression**. Confidence is the predicted class probability, while uncertainty is calculated as `1 - confidence`.
+Bug triage is a useful example of human-in-the-loop machine learning: a model can make an initial routing suggestion, while low-confidence cases remain visible for review instead of being silently accepted.
 
-When trained artifacts are unavailable, the API uses a clearly identified **deterministic keyword fallback**. The fallback is intended only to keep local demos working; it is not presented as a trained ML model.
+## Classifier
+
+The primary baseline uses:
+
+- scikit-learn
+- TF-IDF text features
+- multinomial Logistic Regression
+
+Confidence is based on predicted class probability. The application also calculates uncertainty as `1 - confidence`.
+
+When trained model artifacts are unavailable, the API falls back to a clearly identified deterministic keyword system so local demonstrations still work.
+
+## Important dataset note
+
+The dataset bundled with the repository is **synthetic and intended for development/demo use**. Metrics produced from that dataset should not be presented as evidence of real-world classifier performance.
 
 ## Features
 
-- Single and batch bug classification through FastAPI
-- React and TypeScript dashboard
-- PostgreSQL prediction and feedback audit trail
-- Human review queue for uncertain classifications
-- Real TF-IDF baseline training with accuracy and macro-F1 output
-- Redis-backed cache and Celery worker
-- Prometheus metrics and Grafana dashboards
-- Docker Compose deployment and GitHub Actions CI
+- Single bug classification
+- Batch classification
+- React + TypeScript dashboard
+- PostgreSQL prediction/audit history
+- Human review queue
+- Reviewer feedback capture
+- Redis cache
+- Celery worker
+- Prometheus metrics
+- Grafana dashboards
+- Docker Compose environment
+- Training script with accuracy and macro-F1 reporting
 
 ## Quick start
 
-### 1. Configure the environment
-
 ```bash
 cp .env.example .env
-```
-
-Replace every placeholder password and API key in `.env`.
-
-### 2. Train the demo baseline
-
-The included CSV contains synthetic examples for development only. Do not present its metrics as real-world performance.
-
-```bash
 python -m pip install -r requirements.txt
 python scripts/train_baseline.py
-```
-
-Training writes the following files to `saved_models/tfidf_model/`:
-
-- `tfidf_vectorizer.joblib`
-- `classifier.joblib`
-- `metadata.json`
-- `classification_report.json`
-
-### 3. Start the stack
-
-```bash
 docker compose up --build
 ```
 
-Services:
+Typical local services:
 
 - Dashboard: `http://localhost:3000`
-- API documentation: `http://localhost:8000/docs`
-- Health check: `http://localhost:8000/health`
+- API docs: `http://localhost:8000/docs`
+- Health: `http://localhost:8000/health`
 - Prometheus: `http://localhost:9090`
 - Grafana: `http://localhost:3001`
 
-## Example prediction
+## Model artifacts
 
-```bash
-curl -X POST http://localhost:8000/api/v1/predict/single \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "subject": "Authentication regression",
-    "description": "OAuth login fails after the JWT refresh token expires"
-  }'
-```
+Training writes artifacts such as:
 
-## Retraining
+- TF-IDF vectorizer
+- classifier
+- metadata
+- classification report
 
-Retraining is disabled unless `ENABLE_RETRAINING=true` and `ADMIN_API_KEY` is set. Queue a baseline retraining job with:
-
-```bash
-curl -X POST http://localhost:8000/api/v1/models/retrain \
-  -H "X-Admin-Key: $ADMIN_API_KEY"
-```
-
-The worker trains from `TRAINING_DATA_PATH`. Reviewer feedback is stored for later dataset curation, but it is **not automatically treated as clean training data**.
+Generated model files and large presentation/media artifacts should be kept under review so the repository stays lightweight.
 
 ## Documentation
 
@@ -89,7 +73,15 @@ The worker trains from `TRAINING_DATA_PATH`. Reviewer feedback is stored for lat
 
 ## Current limitations
 
-- The bundled dataset is synthetic and intended only for development.
-- Authentication is limited to an admin key for management actions; end-user identity is not implemented.
-- Feedback requires validation and dataset curation before retraining.
-- Production deployments should use managed secrets, TLS, database migrations, backups, and external monitoring.
+- Bundled training data is synthetic
+- End-user identity/authentication is limited
+- Human feedback requires curation before retraining
+- Public deployment would need managed secrets, TLS, migrations, backups and stronger monitoring
+
+## Next improvements
+
+- Evaluate on a real labelled bug dataset
+- Add screenshots / demo GIF to the README
+- Surface CI/test status
+- Track precision/recall/F1 per class
+- Document model error analysis
