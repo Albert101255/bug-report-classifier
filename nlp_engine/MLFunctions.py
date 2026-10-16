@@ -2,11 +2,11 @@
 # Machine Learning Functions and Classes #
 ##########################################
 
-from tensorflow import keras
-import tensorflow.keras.backend as K
 import matplotlib.pyplot as plt
-import pandas as pd
 import numpy as np
+import pandas as pd
+import tensorflow.keras.backend as K
+from tensorflow import keras
 
 
 def plot_history(history, title, save=False, fname=None):
@@ -327,5 +327,5 @@ def proportion_to_uncertainty(preds_df, target_prop):
 class PrintDot(keras.callbacks.Callback):
     def on_epoch_end(self, epoch, logs):
         if epoch % 100 == 0:
-            print("")
+            print()
         print(".", end="")

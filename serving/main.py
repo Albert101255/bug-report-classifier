@@ -1,19 +1,20 @@
 import time
 from datetime import datetime
-from typing import Optional, List, Dict, Any
 from io import StringIO
-import pandas as pd
-from fastapi import FastAPI, HTTPException, Depends, File, UploadFile, Response
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, Field, field_validator
-from sqlalchemy.orm import Session
-from sqlalchemy import func
-from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
+from typing import Any
 
-from serving.database import get_db, engine
-from serving.models import Base, Prediction, Feedback, Team
+import pandas as pd
+from fastapi import Depends, FastAPI, File, HTTPException, Response, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
+from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
+from pydantic import BaseModel, Field, field_validator
+from sqlalchemy import func
+from sqlalchemy.orm import Session
+
+from serving.database import engine, get_db
+from serving.metrics import prediction_latency, predictions_counter
 from serving.model_manager import model_manager
-from serving.metrics import predictions_counter, prediction_latency
+from serving.models import Base, Feedback, Prediction, Team
 
 # Create DB schema
 Base.metadata.create_all(bind=engine)
@@ -37,7 +38,7 @@ class PredictRequest(BaseModel):
             "example": "OAuth token validation failure on user login endpoint"
         },
     )
-    bug_title: Optional[str] = None
+    bug_title: str | None = None
 
     @field_validator("description")
     def description_not_empty(cls, v):
@@ -50,7 +51,7 @@ class PredictResponse(BaseModel):
     success: bool
     prediction: str
     confidence: float
-    alternatives: List[Dict[str, Any]]
+    alternatives: list[dict[str, Any]]
     uncertainty: float
     timestamp: str
     model_version: str
@@ -98,7 +99,7 @@ async def predict_single(req: PredictRequest, db: Session = Depends(get_db)):
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Internal server error: {e!s}")
 
 
 @app.post("/api/v1/predict/batch")
@@ -114,7 +115,7 @@ async def predict_batch(file: UploadFile = File(...), db: Session = Depends(get_
 
             p = Prediction(
                 bug_description=desc,
-                bug_title=str(row.get("subject", f"Batch Item {idx+1}")),
+                bug_title=str(row.get("subject", f"Batch Item {idx + 1}")),
                 predicted_team=result["prediction"],
                 confidence=result["confidence"],
                 uncertainty=result["uncertainty"],
@@ -145,7 +146,7 @@ async def predict_batch(file: UploadFile = File(...), db: Session = Depends(get_
 async def get_history(
     limit: int = 100,
     offset: int = 0,
-    team_filter: Optional[str] = None,
+    team_filter: str | None = None,
     confidence_min: float = 0.0,
     db: Session = Depends(get_db),
 ):
@@ -181,7 +182,7 @@ async def get_history(
 class FeedbackRequest(BaseModel):
     prediction_id: int
     correct_team: str
-    reason: Optional[str] = None
+    reason: str | None = None
 
 
 @app.post("/api/v1/feedback/correct")

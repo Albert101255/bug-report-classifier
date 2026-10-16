@@ -1,49 +1,48 @@
 #!/usr/bin/env python
 
 # Data Manipulation:
-import pandas as pd
 import numpy as np
-
-# Feature Extraction
-from sklearn.model_selection import train_test_split
-from sklearn.feature_extraction.text import TfidfVectorizer
-
-# Models
-import tensorflow as tf
-from tensorflow import keras
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Dropout, Input, Activation, PReLU, LeakyReLU
+import pandas as pd
 
 # Graphing
 import seaborn as sns
 
+# Models
+import tensorflow as tf
+from sklearn.feature_extraction.text import TfidfVectorizer
+
+# Feature Extraction
+from sklearn.model_selection import train_test_split
+from tensorflow import keras
+from tensorflow.keras.layers import Activation, Dense, Dropout, Input, LeakyReLU, PReLU
+from tensorflow.keras.models import Sequential
+
 sns.set()
-from tabulate import tabulate
+import argparse
 
 # Utilities
 import configparser
-import pickle
-import multiprocessing
-import argparse
-import sys
-from pathlib import Path
-from tqdm import tqdm
 
 # Logging
 import logging
+import multiprocessing
+import pickle
+import sys
+from pathlib import Path
 
+from tabulate import tabulate
+from tqdm import tqdm
 
 # Custom Libraries
 sys.path.insert(1, "../nlp_engine")
 from MLFunctions import (
-    plot_history,
-    test_with_uncertainty,
+    acc_to_uncertainty,
     get_monte_carlo_accuracy,
     graph_confidence,
-    acc_to_uncertainty,
+    plot_history,
+    test_with_uncertainty,
 )
 from Preprocessing import preprocess_training_text
-
 
 description = """
 

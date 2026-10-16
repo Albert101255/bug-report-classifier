@@ -1,6 +1,6 @@
-import numpy as np
 import logging
-from typing import Dict
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +29,7 @@ class ModelManager:
         self.version = version
         logger.info(f"Model {version} initialized and loaded into memory")
 
-    def predict(self, text: str, mc_iterations: int = 10) -> Dict:
+    def predict(self, text: str, mc_iterations: int = 10) -> dict:
         if not text or not text.strip():
             raise ValueError("Description cannot be empty")
 

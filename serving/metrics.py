@@ -1,4 +1,4 @@
-from prometheus_client import Counter, Histogram, Gauge
+from prometheus_client import Counter, Gauge, Histogram
 
 predictions_counter = Counter(
     "predictions_total", "Total predictions made", ["team", "confidence_level"]

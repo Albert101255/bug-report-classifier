@@ -5,18 +5,18 @@
 # concatenated bug description and label field. Returns inference, confidence, and a boolean variable indicating success.
 
 # Load Relevant libraries, uniquely the flask web framework used for establishing RESTful API
-from waitress import serve
-import pandas as pd
-from tensorflow import keras
-import sys
-import tensorflow as tf
-import flask
 import pickle
+import sys
+
+import flask
+import pandas as pd
+import tensorflow as tf
+from tensorflow import keras
+from waitress import serve
 
 sys.path.insert(1, "../nlp_engine")
-from Preprocessing import preprocess_training_text
 from MLFunctions import predict_with_uncertainty
-
+from Preprocessing import preprocess_training_text
 
 # initialize flask application and the keras model
 app = flask.Flask(__name__)
@@ -104,10 +104,8 @@ def predict():
 # if this is the main thread of execution start the server
 if __name__ == "__main__":
     print(
-        (
-            "* Loading Keras model and Flask starting server..."
-            "please wait until server has fully started"
-        )
+        "* Loading Keras model and Flask starting server..."
+        "please wait until server has fully started"
     )
     tf.compat.v1.disable_eager_execution()
     serve(app, host="0.0.0.0", port=5000)

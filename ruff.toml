@@ -1,5 +1,10 @@
 target-version = "py311"
+extend-exclude = ["*.ipynb"]
 
 [lint.per-file-ignores]
 "backend/app/routes/**/*.py" = ["B008"]
 "backend/app/main.py" = ["B008"]
+"serving/main.py" = ["B008", "BLE001", "DTZ003"]
+"training/*.py" = ["EXE001", "EXE002", "LOG015", "SIM115"]
+"nlp_engine/*.py" = ["SIM201"]
+"serving/pega_rest.py" = ["SIM102"]

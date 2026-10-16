@@ -1,16 +1,13 @@
 import numpy as np
 import pandas as pd
-from sklearn.model_selection import train_test_split
-
 import tensorflow as tf
-from tensorflow import keras
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Dropout, Input, Activation, PReLU
-
-from hyperopt import Trials, STATUS_OK, tpe
-
 from hyperas import optim
 from hyperas.distributions import choice
+from hyperopt import STATUS_OK, Trials, tpe
+from sklearn.model_selection import train_test_split
+from tensorflow import keras
+from tensorflow.keras.layers import Activation, Dense, Dropout, Input, PReLU
+from tensorflow.keras.models import Sequential
 
 
 def data():

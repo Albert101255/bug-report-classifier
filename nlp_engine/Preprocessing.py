@@ -2,12 +2,13 @@
 # Imports #
 ###########
 
-from bs4 import BeautifulSoup
+import re
+
+import en_core_web_sm
 import spacy
+from bs4 import BeautifulSoup
 from text_unidecode import unidecode
 from word2number import w2n
-import en_core_web_sm
-import re
 
 #######################
 # Preprocessing Steps #

@@ -1,9 +1,11 @@
-import sys
 import os
+import sys
 
+os.environ.setdefault("SERVING_DATABASE_URL", "sqlite:///:memory:")
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from fastapi.testclient import TestClient
+
 from serving.main import app
 
 client = TestClient(app)

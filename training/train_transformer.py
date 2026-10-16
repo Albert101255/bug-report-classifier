@@ -1,7 +1,7 @@
 #!/usr/import/env python
 import mlflow
 import mlflow.pytorch
-from transformers import DistilBertTokenizer, DistilBertForSequenceClassification
+from transformers import DistilBertForSequenceClassification, DistilBertTokenizer
 
 
 def train():
