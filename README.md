@@ -1,4 +1,8 @@
+> **Live Interactive Web App:** [https://albert101255.github.io/bug-report-classifier/](https://albert101255.github.io/bug-report-classifier/)
+
 # Bug Report Triage Platform
+
+> **Live Interactive Demo:** [https://albert101255.github.io/bug-report-classifier/](https://albert101255.github.io/bug-report-classifier/)
 
 A FastAPI + React application that classifies software bug reports, stores prediction history, exposes uncertain cases for human review, and supports a reproducible TF-IDF + Logistic Regression baseline.
 

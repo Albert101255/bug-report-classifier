@@ -6,7 +6,7 @@ import { ShieldCheck, Check, X, Sparkles, AlertTriangle } from 'lucide-react';
 export const ReviewQueue: React.FC = () => {
   const [items, setItems] = useState<PredictionResult[]>([]);
   const [selectedTeam, setSelectedTeam] = useState<string>(
-    'BL-101 (Authentication & AuthZ)',
+    'Authentication (BL-101 Auth & AuthZ)',
   );
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -25,6 +25,11 @@ export const ReviewQueue: React.FC = () => {
   }, []);
 
   const handleApprove = async (id: string, team: string) => {
+    await logCorrection(
+      id,
+      team,
+      'Human reviewer approved model recommendation',
+    );
     showToast(`Approved model recommendation for '${team}'`);
     setItems((prev) => prev.filter((i) => i.id !== id));
   };
@@ -38,16 +43,12 @@ export const ReviewQueue: React.FC = () => {
   };
 
   const teamsOptions = [
-    'BL-101 (Authentication & AuthZ)',
-    'BL-102 (Database & ORM)',
-    'BL-103 (UI Components & Design System)',
-    'BL-104 (Payment Gateway & Billing)',
-    'BL-105 (Cloud Infrastructure & K8s)',
-    'BL-106 (API Gateway & Microservices)',
-    'BL-107 (Search & Indexing Engine)',
-    'BL-108 (Notification & Webhooks)',
-    'BL-109 (Analytics & Telemetry)',
-    'BL-110 (Security & Compliance)',
+    'Authentication (BL-101 Auth & AuthZ)',
+    'Database (BL-102 Database & ORM)',
+    'UI/UX (BL-103 UI Components & Design)',
+    'Backend/API (BL-106 API Gateway & Services)',
+    'Performance (BL-105 Cloud & Performance)',
+    'Security (BL-110 Security & Compliance)',
   ];
 
   return (
