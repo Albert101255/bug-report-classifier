@@ -11,7 +11,12 @@ import './App.css';
 
 export const App: React.FC = () => {
   return (
-    <BrowserRouter basename={(import.meta as unknown as { env?: { BASE_URL?: string } }).env?.BASE_URL || '/bug-report-classifier/'}>
+    <BrowserRouter
+      basename={
+        (import.meta as unknown as { env?: { BASE_URL?: string } }).env
+          ?.BASE_URL || '/bug-report-classifier/'
+      }
+    >
       <Layout>
         <Routes>
           <Route path="/" element={<QuickPredict />} />
