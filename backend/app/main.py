@@ -15,6 +15,7 @@ from app.routes import (
 from app.routes import (
     settings as settings_route,
 )
+from app.services.seed import seed_initial_workspace
 from fastapi import FastAPI, Response
 from fastapi.middleware.cors import CORSMiddleware
 from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
@@ -26,6 +27,10 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     logger.info("Initializing database schema on startup...")
     await init_db()
+    try:
+        await seed_initial_workspace()
+    except Exception as e:
+        logger.warning(f"Could not seed initial workspace: {e}")
     yield
     logger.info("Shutting down Triage API server.")
 

@@ -96,6 +96,14 @@ export const Login: React.FC = () => {
             </button>
           </form>
 
+          <div className="mt-4 p-2.5 rounded-lg bg-slate-950/80 border border-slate-800 text-[11px] text-slate-400 space-y-1">
+            <span className="font-semibold text-slate-300 block">Default Workspace Credentials:</span>
+            <div className="flex justify-between font-mono text-[10px]">
+              <span>Email: <strong className="text-slate-200">admin@triage.local</strong></span>
+              <span>Pass: <strong className="text-slate-200">password123</strong></span>
+            </div>
+          </div>
+
           <div className="mt-5 text-center">
             <span className="text-xs text-slate-400">
               Need a new workspace?{' '}

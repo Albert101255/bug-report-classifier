@@ -1,21 +1,37 @@
 from datetime import datetime
 from typing import Any
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 # ==================== Auth & Users ====================
 class RegisterRequest(BaseModel):
-    email: EmailStr
-    password: str = Field(min_length=8, max_length=128)
+    email: str = Field(min_length=3, max_length=255)
+    password: str = Field(min_length=6, max_length=128)
     full_name: str = Field(min_length=2, max_length=100)
     organization_name: str | None = Field(default="Acme Engineering", max_length=100)
     role: str = Field(default="DEVELOPER")
 
+    @field_validator("email")
+    @classmethod
+    def validate_email(cls, v: str) -> str:
+        v = v.strip().lower()
+        if "@" not in v or len(v.split("@")[0]) == 0 or len(v.split("@")[1]) == 0:
+            raise ValueError("Please provide a valid email address.")
+        return v
+
 
 class LoginRequest(BaseModel):
-    email: EmailStr
+    email: str = Field(min_length=3, max_length=255)
     password: str
+
+    @field_validator("email")
+    @classmethod
+    def validate_email(cls, v: str) -> str:
+        v = v.strip().lower()
+        if "@" not in v or len(v.split("@")[0]) == 0 or len(v.split("@")[1]) == 0:
+            raise ValueError("Please provide a valid email address.")
+        return v
 
 
 class TokenResponse(BaseModel):

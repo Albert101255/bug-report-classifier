@@ -56,10 +56,19 @@ async function request<T>(
     try {
       const errorJson = await response.json();
       if (errorJson.detail) {
-        errorMessage =
-          typeof errorJson.detail === 'string'
-            ? errorJson.detail
-            : JSON.stringify(errorJson.detail);
+        if (typeof errorJson.detail === 'string') {
+          errorMessage = errorJson.detail;
+        } else if (Array.isArray(errorJson.detail)) {
+          errorMessage = errorJson.detail
+            .map((d: any) => {
+              const field = d.loc ? d.loc[d.loc.length - 1] : '';
+              const msg = d.msg || d.message || 'Validation error';
+              return field ? `${field}: ${msg}` : msg;
+            })
+            .join('; ');
+        } else {
+          errorMessage = JSON.stringify(errorJson.detail);
+        }
       }
     } catch {
       // Use fallback error message
