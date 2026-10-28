@@ -33,7 +33,7 @@ class Settings(BaseSettings):
     CONFIDENCE_HIGH_THRESHOLD: float = 0.25
     CONFIDENCE_LOW_THRESHOLD: float = 0.50
 
-    CORS_ORIGINS: str = "http://localhost:3000,http://127.0.0.1:3000,http://localhost:5173,http://127.0.0.1:5173"
+    CORS_ORIGINS: str = "http://localhost:3000,http://127.0.0.1:3000,http://localhost:5173,http://127.0.0.1:5173,https://albert101255.github.io"
     ADMIN_API_KEY: str | None = None
     ENABLE_RETRAINING: bool = True
     SEED_DEMO_DATA: bool = True

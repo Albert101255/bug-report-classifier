@@ -62,6 +62,11 @@ app.include_router(integrations.router, prefix=settings.API_V1_STR)
 app.include_router(models.router, prefix=settings.API_V1_STR)
 
 
+@app.get("/healthz", tags=["System"])
+async def system_health_check():
+    return {"status": "ok", "app": settings.PROJECT_NAME, "version": settings.VERSION}
+
+
 @app.get("/health", tags=["Health"])
 async def health_check() -> dict:
     return {
