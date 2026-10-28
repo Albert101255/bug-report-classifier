@@ -1,26 +1,56 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: bug-classifier-api
+  name: triage-api
   labels:
-    app: bug-classifier-api
+    app: triage-api
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: bug-classifier-api
+      app: triage-api
   template:
     metadata:
       labels:
-        app: bug-classifier-api
+        app: triage-api
     spec:
       containers:
-      - name: bug-classifier-api
-        image: bug-classifier-api:latest
+      - name: triage-api
+        image: triage-api:v2.0.0
         ports:
         - containerPort: 8000
         env:
         - name: DATABASE_URL
-          value: "postgresql://bug_user:secure_password_123@postgres:5432/bug_classifier"
+          valueFrom:
+            secretKeyRef:
+              name: triage-secrets
+              key: database-url
         - name: REDIS_URL
-          value: "redis://redis:6379"
+          valueFrom:
+            secretKeyRef:
+              name: triage-secrets
+              key: redis-url
+        - name: JWT_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: triage-secrets
+              key: jwt-secret-key
+        resources:
+          limits:
+            cpu: "1000m"
+            memory: "1Gi"
+          requests:
+            cpu: "250m"
+            memory: "512Mi"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 10

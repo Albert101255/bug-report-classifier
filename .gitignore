@@ -17,6 +17,9 @@ htmlcov/
 *.tsbuildinfo
 *:Zone.Identifier
 jobs.json
+test-results/
+playwright-report/
+.playwright/
 
 data/pickles/*
 data/csvs/*

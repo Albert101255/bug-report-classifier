@@ -1,81 +1,106 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import {
-  Zap,
-  UploadCloud,
-  History,
+  LayoutDashboard,
+  CheckCircle2,
+  PlusCircle,
+  Inbox,
   BarChart3,
-  ShieldCheck,
+  Users2,
   Settings,
-  Bug,
+  Cpu,
+  LogOut,
+  Shield,
+  Layers,
 } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
 export const Sidebar: React.FC = () => {
+  const { user, logout } = useAuth();
+
+  const navItems = [
+    { to: '/', label: 'Overview', icon: LayoutDashboard },
+    { to: '/issues', label: 'Issues', icon: CheckCircle2 },
+    { to: '/issues/new', label: 'Create Issue', icon: PlusCircle },
+    { to: '/triage', label: 'Triage Inbox', icon: Inbox },
+    { to: '/analytics', label: 'Analytics', icon: BarChart3 },
+    { to: '/teams', label: 'Teams & Projects', icon: Users2 },
+    { to: '/settings', label: 'Settings', icon: Settings },
+  ];
+
+  if (user?.role === 'ORG_ADMIN') {
+    navItems.push({ to: '/models', label: 'Models', icon: Cpu });
+  }
+
   return (
-    <aside className="sidebar">
-      <div className="brand">
-        <div className="brand-icon">
-          <Bug size={22} />
-        </div>
-        <div>
-          <div className="brand-title">Bug Classifier</div>
-          <div style={{ fontSize: '0.7rem', color: '#94a3b8' }}>
-            MC Dropout SaaS Platform
+    <aside className="w-64 bg-slate-900 border-r border-slate-800 text-slate-300 flex flex-col justify-between shrink-0 select-none">
+      <div>
+        {/* Workspace Brand Header */}
+        <div className="h-14 flex items-center px-4 border-b border-slate-800 gap-2.5">
+          <div className="w-8 h-8 rounded-lg bg-brand-600 flex items-center justify-center text-white font-bold text-sm shadow-sm">
+            <Layers className="w-4 h-4" />
+          </div>
+          <div className="flex flex-col">
+            <span className="font-semibold text-sm text-slate-100 tracking-tight">
+              Triage
+            </span>
+            <span className="text-[11px] text-slate-400 font-mono leading-none">
+              Engineering Platform
+            </span>
           </div>
         </div>
+
+        {/* Navigation Items */}
+        <nav className="p-3 space-y-1">
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            return (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end={item.to === '/'}
+                className={({ isActive }) =>
+                  `flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                    isActive
+                      ? 'bg-slate-800 text-brand-400 font-semibold shadow-xs'
+                      : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                  }`
+                }
+              >
+                <Icon className="w-4 h-4 shrink-0" />
+                <span>{item.label}</span>
+              </NavLink>
+            );
+          })}
+        </nav>
       </div>
 
-      <ul className="nav-list">
-        <li className="nav-item">
-          <NavLink
-            to="/"
-            end
-            className={({ isActive }) => (isActive ? 'active' : '')}
+      {/* User Footer Profile */}
+      <div className="p-3 border-t border-slate-800">
+        <div className="flex items-center justify-between px-2 py-1.5 rounded-md hover:bg-slate-800/50">
+          <div className="flex items-center gap-2.5 overflow-hidden">
+            <div className="w-7 h-7 rounded-full bg-slate-700 flex items-center justify-center text-slate-200 text-xs font-semibold">
+              {user?.full_name ? user.full_name[0].toUpperCase() : 'U'}
+            </div>
+            <div className="flex flex-col overflow-hidden">
+              <span className="text-xs font-medium text-slate-200 truncate">
+                {user?.full_name || 'User'}
+              </span>
+              <span className="text-[10px] text-slate-400 font-mono truncate flex items-center gap-1">
+                <Shield className="w-2.5 h-2.5 text-brand-400" />
+                {user?.role || 'DEVELOPER'}
+              </span>
+            </div>
+          </div>
+          <button
+            onClick={logout}
+            title="Sign out"
+            className="p-1.5 text-slate-400 hover:text-red-400 rounded transition-colors"
           >
-            <Zap size={18} /> Quick Predict
-          </NavLink>
-        </li>
-        <li className="nav-item">
-          <NavLink
-            to="/batch"
-            className={({ isActive }) => (isActive ? 'active' : '')}
-          >
-            <UploadCloud size={18} /> Batch Upload
-          </NavLink>
-        </li>
-        <li className="nav-item">
-          <NavLink
-            to="/history"
-            className={({ isActive }) => (isActive ? 'active' : '')}
-          >
-            <History size={18} /> Prediction History
-          </NavLink>
-        </li>
-        <li className="nav-item">
-          <NavLink
-            to="/analytics"
-            className={({ isActive }) => (isActive ? 'active' : '')}
-          >
-            <BarChart3 size={18} /> Model Analytics
-          </NavLink>
-        </li>
-        <li className="nav-item">
-          <NavLink
-            to="/review"
-            className={({ isActive }) => (isActive ? 'active' : '')}
-          >
-            <ShieldCheck size={18} /> Review Queue
-          </NavLink>
-        </li>
-        <li className="nav-item">
-          <NavLink
-            to="/settings"
-            className={({ isActive }) => (isActive ? 'active' : '')}
-          >
-            <Settings size={18} /> Settings & Admin
-          </NavLink>
-        </li>
-      </ul>
+            <LogOut className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
     </aside>
   );
 };

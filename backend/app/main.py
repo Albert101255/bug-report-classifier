@@ -5,47 +5,29 @@ from app.config import settings
 from app.database import init_db
 from app.routes import (
     analytics,
-    compare,
-    history,
+    auth,
     integrations,
-    predict,
-    retrain,
-    review,
-    teams,
+    issues,
+    models,
+    organizations,
+    triage,
+)
+from app.routes import (
+    settings as settings_route,
 )
 from fastapi import FastAPI, Response
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi_cache import FastAPICache
-from fastapi_cache.backends.redis import RedisBackend
 from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
-from redis import asyncio as aioredis
 
 logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    logger.info("Initializing database schema on startup...")
     await init_db()
-    redis = None
-    try:
-        redis = aioredis.from_url(
-            settings.REDIS_URL,
-            encoding="utf8",
-            decode_responses=True,
-        )
-        await redis.ping()
-        FastAPICache.init(RedisBackend(redis), prefix="fastapi-cache")
-        app.state.redis = redis
-    except Exception:
-        logger.warning(
-            "Redis is unavailable; cache-dependent features are disabled", exc_info=True
-        )
-        app.state.redis = None
-
     yield
-
-    if redis is not None:
-        await redis.aclose()
+    logger.info("Shutting down Triage API server.")
 
 
 app = FastAPI(
@@ -64,14 +46,15 @@ app.add_middleware(
     allow_headers=["Authorization", "Content-Type", "X-Admin-Key"],
 )
 
-app.include_router(predict.router, prefix=settings.API_V1_STR)
-app.include_router(history.router, prefix=settings.API_V1_STR)
-app.include_router(review.router, prefix=settings.API_V1_STR)
+# Register routers under /api/v1
+app.include_router(auth.router, prefix=settings.API_V1_STR)
+app.include_router(organizations.router, prefix=settings.API_V1_STR)
+app.include_router(issues.router, prefix=settings.API_V1_STR)
+app.include_router(triage.router, prefix=settings.API_V1_STR)
 app.include_router(analytics.router, prefix=settings.API_V1_STR)
-app.include_router(teams.router, prefix=settings.API_V1_STR)
-app.include_router(retrain.router, prefix=settings.API_V1_STR)
+app.include_router(settings_route.router, prefix=settings.API_V1_STR)
 app.include_router(integrations.router, prefix=settings.API_V1_STR)
-app.include_router(compare.router, prefix=settings.API_V1_STR)
+app.include_router(models.router, prefix=settings.API_V1_STR)
 
 
 @app.get("/health", tags=["Health"])

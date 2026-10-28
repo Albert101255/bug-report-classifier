@@ -1,4 +1,3 @@
-import csv
 import json
 import os
 import tempfile
@@ -15,25 +14,31 @@ from sklearn.model_selection import train_test_split
 
 
 def _read_dataset(dataset_path: Path) -> tuple[list[str], list[str]]:
+    """Read a curated training dataset in JSONL format."""
     if not dataset_path.exists():
         raise FileNotFoundError(f"Training dataset not found: {dataset_path}")
 
     texts: list[str] = []
     labels: list[str] = []
-    with dataset_path.open("r", encoding="utf-8", newline="") as handle:
-        reader = csv.DictReader(handle)
-        required = {"description", "team"}
-        missing = required.difference(reader.fieldnames or [])
-        if missing:
-            raise ValueError(
-                f"Dataset is missing required columns: {', '.join(sorted(missing))}"
-            )
 
-        for row in reader:
-            description = (row.get("description") or "").strip()
-            subject = (row.get("subject") or "").strip()
-            team = (row.get("team") or "").strip()
+    # Strict JSONL support for internal training datasets
+    with dataset_path.open("r", encoding="utf-8") as handle:
+        for line_num, line in enumerate(handle, 1):
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                item = json.loads(line)
+            except json.JSONDecodeError as exc:
+                raise ValueError(
+                    f"Invalid JSON on line {line_num} in {dataset_path}: {exc}"
+                ) from exc
+
+            description = str(item.get("description") or "").strip()
+            subject = str(item.get("subject") or "").strip()
+            team = str(item.get("team") or "").strip()
             combined = f"{subject} {description}".strip()
+
             if combined and team:
                 texts.append(combined)
                 labels.append(team)

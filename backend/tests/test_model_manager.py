@@ -18,7 +18,7 @@ def test_rule_fallback_is_deterministic(tmp_path: Path, monkeypatch) -> None:
 
 def test_trained_model_loads_and_predicts(tmp_path: Path, monkeypatch) -> None:
     repository_root = Path(__file__).resolve().parents[2]
-    dataset = repository_root / "data" / "demo_bug_reports.csv"
+    dataset = repository_root / "data" / "training_dataset.jsonl"
     model_dir = tmp_path / "models"
     metadata = train_baseline(dataset, model_dir)
 

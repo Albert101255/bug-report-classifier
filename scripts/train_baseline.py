@@ -14,12 +14,12 @@ from app.services.training import train_baseline
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Train the TF-IDF bug-routing baseline."
+        description="Train the TF-IDF bug-routing baseline on JSONL training data."
     )
     parser.add_argument(
         "--data",
         type=Path,
-        default=REPOSITORY_ROOT / "data" / "demo_bug_reports.csv",
+        default=REPOSITORY_ROOT / "data" / "training_dataset.jsonl",
     )
     parser.add_argument(
         "--output",

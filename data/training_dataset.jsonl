@@ -1,0 +1,60 @@
+{"subject": "OAuth login failure", "description": "Users cannot log in after the JWT refresh token expires", "team": "BL-101 (Authentication & AuthZ)"}
+{"subject": "Password reset broken", "description": "Password reset link is rejected as an invalid authentication token", "team": "BL-101 (Authentication & AuthZ)"}
+{"subject": "Session issue", "description": "User session ends immediately after successful login", "team": "BL-101 (Authentication & AuthZ)"}
+{"subject": "Permission regression", "description": "Admin permission check denies access to an authorized user", "team": "BL-101 (Authentication & AuthZ)"}
+{"subject": "SSO callback error", "description": "OAuth callback returns an authentication state mismatch", "team": "BL-101 (Authentication & AuthZ)"}
+{"subject": "Logout problem", "description": "Logout does not invalidate the active session cookie", "team": "BL-101 (Authentication & AuthZ)"}
+{"subject": "PostgreSQL pool exhausted", "description": "Database connection pool is exhausted during peak traffic", "team": "BL-102 (Database & ORM)"}
+{"subject": "Slow SQL query", "description": "ORM query performs a full table scan and times out", "team": "BL-102 (Database & ORM)"}
+{"subject": "Migration failure", "description": "Database migration fails while adding a required column", "team": "BL-102 (Database & ORM)"}
+{"subject": "Deadlock", "description": "Concurrent transactions produce a PostgreSQL deadlock", "team": "BL-102 (Database & ORM)"}
+{"subject": "MySQL connection", "description": "Application cannot reconnect to MySQL after restart", "team": "BL-102 (Database & ORM)"}
+{"subject": "Duplicate records", "description": "ORM save operation creates duplicate database rows", "team": "BL-102 (Database & ORM)"}
+{"subject": "Dropdown overflow", "description": "React dropdown menu overflows the mobile screen", "team": "BL-103 (UI Components & Design System)"}
+{"subject": "Dark theme issue", "description": "CSS variables display the wrong button color in dark mode", "team": "BL-103 (UI Components & Design System)"}
+{"subject": "Responsive layout", "description": "Dashboard layout breaks on a narrow viewport", "team": "BL-103 (UI Components & Design System)"}
+{"subject": "Modal focus", "description": "UI modal does not trap keyboard focus", "team": "BL-103 (UI Components & Design System)"}
+{"subject": "Component crash", "description": "React table component crashes when the list is empty", "team": "BL-103 (UI Components & Design System)"}
+{"subject": "Button alignment", "description": "Primary button is misaligned in the settings form", "team": "BL-103 (UI Components & Design System)"}
+{"subject": "Stripe webhook failure", "description": "Payment webhook signature validation fails", "team": "BL-104 (Payment Gateway & Billing)"}
+{"subject": "Duplicate charge", "description": "Checkout creates two credit card charges", "team": "BL-104 (Payment Gateway & Billing)"}
+{"subject": "Invoice error", "description": "Billing invoice shows the wrong tax amount", "team": "BL-104 (Payment Gateway & Billing)"}
+{"subject": "Refund stuck", "description": "Stripe refund remains pending after approval", "team": "BL-104 (Payment Gateway & Billing)"}
+{"subject": "Subscription renewal", "description": "Recurring payment is not collected during renewal", "team": "BL-104 (Payment Gateway & Billing)"}
+{"subject": "Checkout failure", "description": "Payment gateway rejects a valid card at checkout", "team": "BL-104 (Payment Gateway & Billing)"}
+{"subject": "Pod OOMKilled", "description": "Kubernetes pod restarts because the memory limit is too low", "team": "BL-105 (Cloud Infrastructure & K8s)"}
+{"subject": "Docker startup", "description": "Container exits immediately during deployment", "team": "BL-105 (Cloud Infrastructure & K8s)"}
+{"subject": "CPU throttling", "description": "Cloud worker is heavily throttled by its CPU limit", "team": "BL-105 (Cloud Infrastructure & K8s)"}
+{"subject": "Deployment rollout", "description": "Kubernetes deployment never becomes ready", "team": "BL-105 (Cloud Infrastructure & K8s)"}
+{"subject": "Image pull", "description": "Pod cannot pull the private Docker image", "team": "BL-105 (Cloud Infrastructure & K8s)"}
+{"subject": "Service discovery", "description": "Container cannot resolve another service in the cluster", "team": "BL-105 (Cloud Infrastructure & K8s)"}
+{"subject": "API timeout", "description": "REST endpoint times out when calling a downstream microservice", "team": "BL-106 (API Gateway & Microservices)"}
+{"subject": "Gateway 502", "description": "API gateway returns HTTP 502 for a healthy service", "team": "BL-106 (API Gateway & Microservices)"}
+{"subject": "FastAPI validation", "description": "FastAPI route accepts an invalid request body", "team": "BL-106 (API Gateway & Microservices)"}
+{"subject": "Missing endpoint", "description": "Client receives HTTP 404 from an existing endpoint", "team": "BL-106 (API Gateway & Microservices)"}
+{"subject": "Service contract", "description": "Microservice response no longer matches the API contract", "team": "BL-106 (API Gateway & Microservices)"}
+{"subject": "Retry storm", "description": "Gateway retries create excessive traffic after HTTP 500", "team": "BL-106 (API Gateway & Microservices)"}
+{"subject": "Search ranking", "description": "Search results rank an irrelevant document first", "team": "BL-107 (Search & Indexing Engine)"}
+{"subject": "Elasticsearch index", "description": "New records are missing from the Elasticsearch index", "team": "BL-107 (Search & Indexing Engine)"}
+{"subject": "Autocomplete failure", "description": "Autocomplete returns no suggestions for a known product", "team": "BL-107 (Search & Indexing Engine)"}
+{"subject": "Filter bug", "description": "Search filter ignores the selected category", "team": "BL-107 (Search & Indexing Engine)"}
+{"subject": "Full text search", "description": "Full text query does not match plural words", "team": "BL-107 (Search & Indexing Engine)"}
+{"subject": "Reindex problem", "description": "Background reindex operation stops halfway", "team": "BL-107 (Search & Indexing Engine)"}
+{"subject": "Email not sent", "description": "SMTP notification is not delivered to the user", "team": "BL-108 (Notification & Webhooks)"}
+{"subject": "Webhook retry", "description": "Webhook dispatcher never retries a failed request", "team": "BL-108 (Notification & Webhooks)"}
+{"subject": "Duplicate notification", "description": "User receives the same push notification twice", "team": "BL-108 (Notification & Webhooks)"}
+{"subject": "SMS failure", "description": "SMS provider rejects the notification payload", "team": "BL-108 (Notification & Webhooks)"}
+{"subject": "Email template", "description": "Password reset email template renders a broken link", "team": "BL-108 (Notification & Webhooks)"}
+{"subject": "Webhook timeout", "description": "Outgoing webhook request times out without logging", "team": "BL-108 (Notification & Webhooks)"}
+{"subject": "Prometheus metric", "description": "Prometheus counter does not increase after a prediction", "team": "BL-109 (Analytics & Telemetry)"}
+{"subject": "Grafana dashboard", "description": "Grafana chart displays the wrong latency unit", "team": "BL-109 (Analytics & Telemetry)"}
+{"subject": "Analytics total", "description": "Daily analytics report double counts events", "team": "BL-109 (Analytics & Telemetry)"}
+{"subject": "Telemetry gap", "description": "Service stops exporting telemetry after reconnecting", "team": "BL-109 (Analytics & Telemetry)"}
+{"subject": "Tracking event", "description": "User tracking event is missing a required property", "team": "BL-109 (Analytics & Telemetry)"}
+{"subject": "Latency chart", "description": "Dashboard latency percentile is calculated incorrectly", "team": "BL-109 (Analytics & Telemetry)"}
+{"subject": "XSS vulnerability", "description": "Comment field allows a stored cross site scripting payload", "team": "BL-110 (Security & Compliance)"}
+{"subject": "SQL injection", "description": "Search parameter may allow SQL injection", "team": "BL-110 (Security & Compliance)"}
+{"subject": "CSRF protection", "description": "State-changing request is missing CSRF validation", "team": "BL-110 (Security & Compliance)"}
+{"subject": "Encryption issue", "description": "Sensitive value is stored without encryption", "team": "BL-110 (Security & Compliance)"}
+{"subject": "Compliance log", "description": "Audit log omits a required compliance event", "team": "BL-110 (Security & Compliance)"}
+{"subject": "Privilege escalation", "description": "User can exploit an authorization check to gain access", "team": "BL-110 (Security & Compliance)"}

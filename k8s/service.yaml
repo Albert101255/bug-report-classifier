@@ -1,12 +1,14 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: bug-classifier-api-service
+  name: triage-api-service
+  labels:
+    app: triage-api
 spec:
-  selector:
-    app: bug-classifier-api
+  type: ClusterIP
   ports:
-    - protocol: TCP
-      port: 80
-      targetPort: 8000
-  type: LoadBalancer
+  - port: 8000
+    targetPort: 8000
+    protocol: TCP
+  selector:
+    app: triage-api

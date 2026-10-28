@@ -1,0 +1,17 @@
+[tool.ruff]
+exclude = [
+    "archive",
+    ".git",
+    "venv",
+    "node_modules",
+]
+line-length = 120
+
+[tool.ruff.lint]
+ignore = [
+    "B008",   # FastAPI Depends() in function parameters
+    "BLE001", # Do not catch blind exception
+    "DTZ003", # Use datetime.datetime.now(tz=...)
+    "SIM102",
+    "SIM210",
+]

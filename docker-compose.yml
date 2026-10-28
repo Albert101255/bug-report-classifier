@@ -35,7 +35,7 @@ services:
       DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-bug_user}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-bug_classifier}
       REDIS_URL: redis://redis:6379/0
       MODEL_DIR: /app/saved_models/tfidf_model
-      TRAINING_DATA_PATH: /app/data/demo_bug_reports.csv
+      TRAINING_DATA_PATH: /app/data/training_dataset.jsonl
     ports:
       - "127.0.0.1:8000:8000"
     depends_on:
@@ -62,7 +62,7 @@ services:
       DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-bug_user}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-bug_classifier}
       REDIS_URL: redis://redis:6379/0
       MODEL_DIR: /app/saved_models/tfidf_model
-      TRAINING_DATA_PATH: /app/data/demo_bug_reports.csv
+      TRAINING_DATA_PATH: /app/data/training_dataset.jsonl
     command: celery -A app.worker.celery_app worker --loglevel=INFO
     depends_on:
       redis:

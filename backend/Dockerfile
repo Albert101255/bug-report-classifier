@@ -13,6 +13,8 @@ RUN python -m pip install --upgrade pip && \
     pip install -r /tmp/requirements.txt
 
 COPY backend/app/ /app/app/
+COPY alembic/ /app/alembic/
+COPY alembic.ini /app/alembic.ini
 COPY data/ /app/data/
 COPY saved_models/ /app/saved_models/
 

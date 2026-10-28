@@ -11,5 +11,5 @@ repos:
     rev: v0.16.1
     hooks:
       - id: ruff
-        args: [ --fix, "--extend-ignore=E402,E401" ]
+        args: [ --fix, "--extend-ignore=E402,E401,B008,BLE001,DTZ003,SIM102,SIM210", "--exclude=archive" ]
       - id: ruff-format

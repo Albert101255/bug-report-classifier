@@ -120,7 +120,7 @@ TEAM_KEYWORDS: dict[str, tuple[str, ...]] = {
 
 
 class ModelManager:
-    """Load a real TF-IDF classifier and provide a deterministic fallback."""
+    """Load TF-IDF + Logistic Regression classifier with transparent keyword fallback."""
 
     def __init__(self) -> None:
         self.vectorizer: Any | None = None
@@ -130,6 +130,8 @@ class ModelManager:
         self.framework = "Deterministic keyword fallback"
         self.trained_at: str | None = None
         self.vocabulary_size = 0
+        self.evaluation_accuracy: float | None = None
+        self.evaluation_macro_f1: float | None = None
         self._metadata_mtime = 0.0
         self._next_reload_check = 0.0
         self._load_artifacts()
@@ -175,41 +177,49 @@ class ModelManager:
                 metadata.get("framework", "TF-IDF + Logistic Regression")
             )
             self.trained_at = metadata.get("trained_at")
+            self.evaluation_accuracy = metadata.get("accuracy")
+            self.evaluation_macro_f1 = metadata.get("macro_f1")
             self.vocabulary_size = len(getattr(vectorizer, "vocabulary_", {}))
             logger.info("Loaded classifier %s", self.model_version)
         except Exception:
-            logger.exception(
-                "Could not load model artifacts; using deterministic fallback"
-            )
-            self._use_fallback("Model artifacts could not be loaded")
+            logger.exception("Failed to load model artifacts. Reverting to fallback.")
+            self._use_fallback("Model artifact loading failed")
 
     def _use_fallback(self, reason: str) -> None:
         self.vectorizer = None
         self.classifier = None
         self.is_loaded = False
         self.model_version = "rules-fallback-v1"
-        self.framework = "Deterministic keyword fallback"
+        self.framework = f"Deterministic keyword fallback ({reason})"
         self.trained_at = None
         self.vocabulary_size = 0
-        logger.warning("%s. Using rule fallback.", reason)
 
     def _maybe_reload(self) -> None:
-        now = time.monotonic()
+        now = time.time()
         if now < self._next_reload_check:
             return
-        self._next_reload_check = now + max(settings.MODEL_RELOAD_SECONDS, 1)
 
+        self._next_reload_check = now + max(1, settings.MODEL_RELOAD_SECONDS)
         _, _, metadata_path = self._paths()
-        if (
-            metadata_path.exists()
-            and metadata_path.stat().st_mtime > self._metadata_mtime
-        ):
-            self._load_artifacts()
+        if not metadata_path.exists():
+            if self.is_loaded:
+                self._load_artifacts()
+            return
+
+        try:
+            current_mtime = metadata_path.stat().st_mtime
+            if current_mtime > self._metadata_mtime:
+                logger.info("Detected updated model metadata. Reloading artifacts.")
+                self._load_artifacts()
+        except OSError:
+            logger.debug("Failed checking model metadata mtime", exc_info=True)
 
     @staticmethod
     def preprocess_text(text: str) -> str:
-        text = re.sub(r"<[^>]+>", " ", text or "")
-        text = re.sub(r"\s+", " ", text).strip().lower()
+        text = text.lower()
+        text = re.sub(r"https?://\S+", "", text)
+        text = re.sub(r"[^\w\s-]", " ", text)
+        text = re.sub(r"\s+", " ", text).strip()
         return text
 
     def _confidence_band(self, uncertainty: float) -> tuple[str, str]:
@@ -219,30 +229,38 @@ class ModelManager:
             return "MEDIUM", "needs_review"
         return "LOW", "needs_review"
 
-    @staticmethod
     def _alternatives(
-        classes: np.ndarray, probabilities: np.ndarray, top_index: int
+        self, classes: np.ndarray, probabilities: np.ndarray, top_index: int
     ) -> list[dict[str, Any]]:
-        sorted_indices = np.argsort(probabilities)[::-1]
+        ranking = np.argsort(probabilities)[::-1]
         alternatives: list[dict[str, Any]] = []
-        for index in sorted_indices:
+        for index in ranking:
             if int(index) == top_index:
                 continue
-            probability = float(probabilities[index])
+            confidence = float(probabilities[index])
             alternatives.append(
                 {
                     "team": str(classes[index]),
-                    "confidence": round(probability, 4),
-                    "uncertainty": round(1.0 - probability, 4),
+                    "confidence": round(confidence, 4),
+                    "uncertainty": round(1.0 - confidence, 4),
                 }
             )
-            if len(alternatives) == 3:
+            if len(alternatives) == 2:
                 break
         return alternatives
 
     def _linear_keywords(
         self, vector: Any, predicted_class: str, clean_text: str
     ) -> list[dict[str, Any]]:
+        if not hasattr(self.vectorizer, "get_feature_names_out") or not hasattr(
+            self.classifier, "coef_"
+        ):
+            return [
+                {"word": token, "score": 1.0}
+                for token in dict.fromkeys(clean_text.split())
+                if len(token) > 2
+            ][:5]
+
         try:
             feature_names = self.vectorizer.get_feature_names_out()
             row = vector.toarray().ravel()
@@ -357,6 +375,9 @@ class ModelManager:
             "confidence_threshold_low": settings.CONFIDENCE_LOW_THRESHOLD,
             "last_trained_at": self.trained_at or "not-trained",
             "is_active": self.is_loaded,
+            "training_dataset_provenance": str(settings.TRAINING_DATA_PATH),
+            "accuracy": self.evaluation_accuracy,
+            "macro_f1": self.evaluation_macro_f1,
         }
 
 

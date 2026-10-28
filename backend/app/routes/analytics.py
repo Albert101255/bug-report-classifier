@@ -1,80 +1,145 @@
+from datetime import UTC, datetime, timedelta
+
+from app.auth.dependencies import get_user_organization
 from app.database import get_db
-from app.models import Prediction
+from app.models import Feedback, Issue, Organization, Prediction, Team
 from app.schemas import AnalyticsSummary
 from fastapi import APIRouter, Depends
-from fastapi_cache.decorator import cache
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-router = APIRouter(prefix="/analytics", tags=["Analytics"])
+router = APIRouter(prefix="/analytics", tags=["Operational Analytics"])
 
 
 @router.get("/summary", response_model=AnalyticsSummary)
-@cache(expire=60)
-async def get_analytics_summary(db: AsyncSession = Depends(get_db)):
-    # Total Predictions Count
-    res_total = await db.execute(select(func.count(Prediction.id)))
-    total_preds = res_total.scalar() or 0
-
-    # Averages
-    res_avg_conf = await db.execute(select(func.avg(Prediction.confidence_score)))
-    avg_conf = round(float(res_avg_conf.scalar() or 0.88), 4)
-
-    res_avg_unc = await db.execute(select(func.avg(Prediction.uncertainty_score)))
-    avg_unc = round(float(res_avg_unc.scalar() or 0.038), 4)
-
-    # Status Counts
-    res_auto = await db.execute(
-        select(func.count(Prediction.id)).filter(Prediction.status == "auto_assigned")
+async def get_analytics_summary(
+    org: Organization = Depends(get_user_organization),
+    db: AsyncSession = Depends(get_db),
+) -> AnalyticsSummary:
+    # 1. Total Issues
+    total_res = await db.execute(
+        select(func.count(Issue.id)).filter(Issue.organization_id == org.id)
     )
-    count_auto = res_auto.scalar() or 0
+    total_issues = total_res.scalar() or 0
 
-    res_review = await db.execute(
-        select(func.count(Prediction.id)).filter(Prediction.status == "needs_review")
+    # 2. Open vs Resolved
+    open_res = await db.execute(
+        select(func.count(Issue.id)).filter(
+            Issue.organization_id == org.id,
+            Issue.status.in_(["NEW", "TRIAGE", "IN_PROGRESS", "REOPENED"]),
+        )
     )
-    count_review = res_review.scalar() or 0
+    open_issues = open_res.scalar() or 0
 
-    res_corr = await db.execute(
-        select(func.count(Prediction.id)).filter(Prediction.status == "human_corrected")
+    resolved_res = await db.execute(
+        select(func.count(Issue.id)).filter(
+            Issue.organization_id == org.id,
+            Issue.status.in_(["FIXED", "VERIFICATION", "CLOSED"]),
+        )
     )
-    count_corr = res_corr.scalar() or 0
+    resolved_issues = resolved_res.scalar() or 0
 
-    denom = max(total_preds, 1)
-    auto_pct = round((count_auto / denom) * 100, 1)
-    review_pct = round((count_review / denom) * 100, 1)
-    corr_pct = round((count_corr / denom) * 100, 1)
+    # 3. Triage pending queue count
+    triage_res = await db.execute(
+        select(func.count(Prediction.id)).filter(
+            Prediction.organization_id == org.id,
+            Prediction.status == "needs_review",
+        )
+    )
+    triage_pending = triage_res.scalar() or 0
 
-    # Breakdown per team
-    team_breakdown = {
-        "BL-101 (Authentication & AuthZ)": 94.5,
-        "BL-102 (Database & ORM)": 91.2,
-        "BL-103 (UI Components & Design System)": 96.0,
-        "BL-104 (Payment Gateway & Billing)": 89.8,
-        "BL-105 (Cloud Infrastructure & K8s)": 93.4,
-        "BL-106 (API Gateway & Microservices)": 92.1,
-        "BL-107 (Search & Indexing Engine)": 88.5,
-        "BL-108 (Notification & Webhooks)": 90.7,
-        "BL-109 (Analytics & Telemetry)": 95.2,
-        "BL-110 (Security & Compliance)": 97.1,
-    }
+    # 4. Average confidence from predictions
+    conf_res = await db.execute(
+        select(func.avg(Prediction.confidence_score)).filter(
+            Prediction.organization_id == org.id
+        )
+    )
+    avg_conf_raw = conf_res.scalar()
+    avg_confidence = round(float(avg_conf_raw), 4) if avg_conf_raw is not None else 0.0
 
-    daily_trend = [
-        {"day": "Mon", "count": 42, "avg_confidence": 0.89},
-        {"day": "Tue", "count": 68, "avg_confidence": 0.91},
-        {"day": "Wed", "count": 95, "avg_confidence": 0.93},
-        {"day": "Thu", "count": 84, "avg_confidence": 0.90},
-        {"day": "Fri", "count": 110, "avg_confidence": 0.94},
-        {"day": "Sat", "count": 35, "avg_confidence": 0.88},
-        {"day": "Sun", "count": 28, "avg_confidence": 0.92},
-    ]
+    # 5. Human Override Rate (from feedback vs total predictions)
+    pred_count_res = await db.execute(
+        select(func.count(Prediction.id)).filter(Prediction.organization_id == org.id)
+    )
+    total_preds = pred_count_res.scalar() or 0
+
+    override_res = await db.execute(
+        select(func.count(Feedback.id))
+        .join(Prediction, Feedback.prediction_id == Prediction.id)
+        .filter(Prediction.organization_id == org.id)
+    )
+    total_overrides = override_res.scalar() or 0
+    override_rate = (
+        round((total_overrides / total_preds) * 100, 1) if total_preds > 0 else 0.0
+    )
+
+    # 6. Severity Breakdown
+    sev_res = await db.execute(
+        select(Issue.severity, func.count(Issue.id))
+        .filter(Issue.organization_id == org.id)
+        .group_by(Issue.severity)
+    )
+    severity_breakdown = {row[0]: row[1] for row in sev_res.all()}
+
+    # 7. Status Breakdown
+    status_res = await db.execute(
+        select(Issue.status, func.count(Issue.id))
+        .filter(Issue.organization_id == org.id)
+        .group_by(Issue.status)
+    )
+    status_breakdown = {row[0]: row[1] for row in status_res.all()}
+
+    # 8. Team Workload
+    team_res = await db.execute(
+        select(Team.name, func.count(Issue.id))
+        .join(Issue, Issue.team_id == Team.id)
+        .filter(Issue.organization_id == org.id)
+        .group_by(Team.name)
+    )
+    team_workload = {row[0]: row[1] for row in team_res.all()}
+
+    # 9. Daily Volume Trend (Last 7 days)
+    daily_volume_trend = []
+    today = datetime.now(UTC).date()
+    for i in range(6, -1, -1):
+        day_date = today - timedelta(days=i)
+        day_start = datetime.combine(day_date, datetime.min.time(), tzinfo=UTC)
+        day_end = datetime.combine(day_date, datetime.max.time(), tzinfo=UTC)
+
+        day_count_res = await db.execute(
+            select(func.count(Issue.id)).filter(
+                Issue.organization_id == org.id,
+                Issue.created_at >= day_start,
+                Issue.created_at <= day_end,
+            )
+        )
+        day_count = day_count_res.scalar() or 0
+
+        day_conf_res = await db.execute(
+            select(func.avg(Prediction.confidence_score)).filter(
+                Prediction.organization_id == org.id,
+                Prediction.created_at >= day_start,
+                Prediction.created_at <= day_end,
+            )
+        )
+        day_conf = day_conf_res.scalar()
+        daily_volume_trend.append(
+            {
+                "day": day_date.strftime("%a %m/%d"),
+                "count": day_count,
+                "avg_confidence": round(float(day_conf), 2) if day_conf else 0.0,
+            }
+        )
 
     return AnalyticsSummary(
-        total_predictions=total_preds,
-        avg_confidence=avg_conf,
-        avg_uncertainty=avg_unc,
-        auto_assigned_pct=auto_pct if total_preds > 0 else 82.5,
-        needs_review_pct=review_pct if total_preds > 0 else 12.0,
-        corrected_pct=corr_pct if total_preds > 0 else 5.5,
-        team_accuracy_breakdown=team_breakdown,
-        daily_prediction_trend=daily_trend,
+        total_issues=total_issues,
+        open_issues=open_issues,
+        resolved_issues=resolved_issues,
+        triage_pending_count=triage_pending,
+        avg_confidence=avg_confidence,
+        human_override_rate=override_rate,
+        severity_breakdown=severity_breakdown,
+        status_breakdown=status_breakdown,
+        team_workload=team_workload,
+        daily_volume_trend=daily_volume_trend,
     )
