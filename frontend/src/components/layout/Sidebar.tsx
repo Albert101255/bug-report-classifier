@@ -18,19 +18,21 @@ import { useAuth } from '../../context/AuthContext';
 export const Sidebar: React.FC = () => {
   const { user, logout } = useAuth();
 
-  const navItems = [
-    { to: '/', label: 'Overview', icon: LayoutDashboard },
-    { to: '/issues', label: 'Issues', icon: CheckCircle2 },
-    { to: '/issues/new', label: 'Create Issue', icon: PlusCircle },
-    { to: '/triage', label: 'Triage Inbox', icon: Inbox },
-    { to: '/analytics', label: 'Analytics', icon: BarChart3 },
-    { to: '/teams', label: 'Teams & Projects', icon: Users2 },
-    { to: '/settings', label: 'Settings', icon: Settings },
-  ];
+  const isAdmin = user?.role === 'ORG_ADMIN';
 
-  if (user?.role === 'ORG_ADMIN') {
-    navItems.push({ to: '/models', label: 'Models', icon: Cpu });
-  }
+  const navItems = isAdmin
+    ? [
+        { to: '/', label: 'Overview', icon: LayoutDashboard },
+        { to: '/triage', label: 'Triage Inbox', icon: Inbox },
+        { to: '/analytics', label: 'Analytics', icon: BarChart3 },
+        { to: '/teams', label: 'Teams & Projects', icon: Users2 },
+        { to: '/settings', label: 'Settings', icon: Settings },
+        { to: '/models', label: 'Models', icon: Cpu },
+      ]
+    : [
+        { to: '/issues/new', label: 'Create Issue', icon: PlusCircle },
+        { to: '/issues', label: 'Issue Explorer', icon: CheckCircle2 },
+      ];
 
   return (
     <aside className="w-64 bg-slate-900 border-r border-slate-800 text-slate-300 flex flex-col justify-between shrink-0 select-none">

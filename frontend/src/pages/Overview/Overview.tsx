@@ -6,7 +6,6 @@ import {
   CheckCircle2,
   Inbox,
   Flame,
-  ArrowUpRight,
   TrendingUp,
   Cpu,
   Layers,
@@ -79,13 +78,6 @@ export const Overview: React.FC = () => {
           >
             <Inbox className="w-3.5 h-3.5 text-amber-500" />
             Triage Queue ({summary?.triage_pending_count || 0})
-          </Link>
-          <Link
-            to="/issues/new"
-            className="px-3.5 py-2 text-xs font-medium rounded-lg bg-brand-600 hover:bg-brand-500 text-white flex items-center gap-1.5 transition-colors shadow-xs"
-          >
-            Create Issue
-            <ArrowUpRight className="w-3.5 h-3.5" />
           </Link>
         </div>
       </div>

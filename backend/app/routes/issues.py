@@ -65,11 +65,19 @@ async def create_issue(
             detail="Project not found in this organization.",
         )
 
-    # Generate sequential issue key
-    count_res = await db.execute(
-        select(func.count(Issue.id)).filter(Issue.project_id == project.id)
+    # Generate next sequential issue key without collisions across the workspace
+    keys_res = await db.execute(
+        select(Issue.issue_key).filter(Issue.issue_key.like(f"{project.key}-%"))
     )
-    issue_num = (count_res.scalar() or 0) + 1
+    existing_keys = keys_res.scalars().all()
+    max_num = 0
+    for k in existing_keys:
+        try:
+            num = int(k.split("-")[-1])
+            max_num = max(max_num, num)
+        except (ValueError, IndexError):
+            pass
+    issue_num = max_num + 1
     issue_key = f"{project.key}-{issue_num}"
 
     # Calculate severity & parse stacktrace

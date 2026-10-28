@@ -44,6 +44,14 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({
   return <>{children}</>;
 };
 
+const RoleAwareIndex: React.FC = () => {
+  const { user } = useAuth();
+  if (user?.role === 'ORG_ADMIN') {
+    return <Overview />;
+  }
+  return <Navigate to="/issues/new" replace />;
+};
+
 export const App: React.FC = () => {
   return (
     <QueryClientProvider client={queryClient}>
@@ -61,7 +69,7 @@ export const App: React.FC = () => {
                 </ProtectedRoute>
               }
             >
-              <Route index element={<Overview />} />
+              <Route index element={<RoleAwareIndex />} />
               <Route path="issues" element={<IssueExplorer />} />
               <Route path="issues/new" element={<CreateIssue />} />
               <Route path="issues/:id" element={<IssueDetail />} />

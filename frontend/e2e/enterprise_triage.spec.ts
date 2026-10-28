@@ -70,15 +70,24 @@ test.describe('Enterprise Triage Platform E2E Tests', () => {
   });
 
   test('03: Single Issue Creation with Intelligent Triage & SLA Calculation', async ({ page }) => {
+    // 1. Verify Admin does NOT see Create Issue in Sidebar
     await page.goto('/login');
     await page.locator('input[type="email"]').fill(TEST_EMAIL);
     await page.locator('input[type="password"]').fill(TEST_PASSWORD);
     await page.getByRole('button', { name: /Sign in/i }).click();
     await expect(page).toHaveURL(/\/(overview)?$/);
+    await expect(page.getByRole('link', { name: 'Create Issue' })).toHaveCount(0);
 
-    // Navigate to Create Issue
-    await page.getByRole('link', { name: 'Create Issue' }).first().click();
+    // 2. Log in as Bug Raiser / QA persona
+    await page.goto('/login');
+    await page.getByRole('button', { name: /Bug Raiser/i }).click();
+    await page.getByRole('button', { name: /Sign in/i }).click();
     await expect(page).toHaveURL('/issues/new');
+
+    // Bug Raiser should see Create Issue and Issue Explorer in sidebar
+    await expect(page.getByRole('link', { name: 'Create Issue' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Issue Explorer' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Overview' })).toHaveCount(0);
 
     // Fill form
     await page.locator('input[placeholder*="PostgreSQL connection pool"]').fill('PostgreSQL connection pool exhausted under concurrent auth requests');
@@ -102,12 +111,11 @@ test.describe('Enterprise Triage Platform E2E Tests', () => {
 
   test('04: Issue Lifecycle & Team Collaboration - Commenting and Status State Machine', async ({ page }) => {
     await page.goto('/login');
-    await page.locator('input[type="email"]').fill(TEST_EMAIL);
-    await page.locator('input[type="password"]').fill(TEST_PASSWORD);
+    await page.getByRole('button', { name: /Bug Raiser/i }).click();
     await page.getByRole('button', { name: /Sign in/i }).click();
 
-    // Go to Issue Explorer
-    await page.getByRole('link', { name: 'Issues' }).click();
+    // Go to Issue Explorer via sidebar link
+    await page.getByRole('link', { name: 'Issue Explorer' }).click();
     await expect(page).toHaveURL('/issues');
 
     // Click on our newly created issue
