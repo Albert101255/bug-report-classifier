@@ -79,4 +79,29 @@ async def seed_initial_workspace():
             )
             session.add(member)
 
+        # Check if qa@triage.local (Bug Raiser / QA Engineer) exists
+        res_qa = await session.execute(
+            select(User).filter(User.email == "qa@triage.local")
+        )
+        user_qa = res_qa.scalar_one_or_none()
+        if not user_qa:
+            user_qa = User(
+                id=str(uuid.uuid4()),
+                email="qa@triage.local",
+                hashed_password=get_password_hash("password123"),
+                full_name="Jane Doe (Bug Reporter)",
+                role="DEVELOPER",
+                is_active=True,
+            )
+            session.add(user_qa)
+            await session.flush()
+
+            member_qa = OrganizationMember(
+                id=str(uuid.uuid4()),
+                organization_id=org.id,
+                user_id=user_qa.id,
+                role="DEVELOPER",
+            )
+            session.add(member_qa)
+
         await session.commit()

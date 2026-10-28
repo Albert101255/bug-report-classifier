@@ -96,18 +96,47 @@ export const Login: React.FC = () => {
             </button>
           </form>
 
-          <div className="mt-4 p-2.5 rounded-lg bg-slate-950/80 border border-slate-800 text-[11px] text-slate-400 space-y-1">
-            <span className="font-semibold text-slate-300 block">
-              Default Workspace Credentials:
+          <div className="mt-4 p-3 rounded-lg bg-slate-950/80 border border-slate-800 text-xs text-slate-400 space-y-2">
+            <span className="font-semibold text-slate-300 block text-[11px] uppercase tracking-wider">
+              Quick Test Logins:
             </span>
-            <div className="flex justify-between font-mono text-[10px]">
-              <span>
-                Email:{' '}
-                <strong className="text-slate-200">admin@triage.local</strong>
-              </span>
-              <span>
-                Pass: <strong className="text-slate-200">password123</strong>
-              </span>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setEmail('admin@triage.local');
+                  setPassword('password123');
+                  setError(null);
+                }}
+                className="p-2 rounded bg-slate-900 hover:bg-slate-800 border border-slate-700/60 text-left transition-colors"
+              >
+                <div className="font-medium text-slate-200 text-xs">
+                  Admin / Lead
+                </div>
+                <div className="font-mono text-[10px] text-slate-400">
+                  admin@triage.local
+                </div>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setEmail('qa@triage.local');
+                  setPassword('password123');
+                  setError(null);
+                }}
+                className="p-2 rounded bg-slate-900 hover:bg-slate-800 border border-slate-700/60 text-left transition-colors"
+              >
+                <div className="font-medium text-slate-200 text-xs">
+                  Bug Raiser / QA
+                </div>
+                <div className="font-mono text-[10px] text-slate-400">
+                  qa@triage.local
+                </div>
+              </button>
+            </div>
+            <div className="text-[10px] text-slate-500 font-mono text-center">
+              Password for both:{' '}
+              <span className="text-slate-300">password123</span>
             </div>
           </div>
 
